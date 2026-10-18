@@ -108,7 +108,7 @@
         F
       </div>
       <h2 class="text-2xl font-black text-[#0B1F3B] tracking-tight">Financiere</h2>
-      <p class="text-xs text-[#D7E7DD]">Acceso privado por invitación</p>
+      <p class="text-xs text-[#475569] font-medium">Acceso privado por invitación</p>
     </div>
 
     <form id="form-login" class="bg-white p-7 rounded-3xl border border-[#C9D6E5] shadow-xl shadow-2xl space-y-4">
@@ -128,7 +128,7 @@
         Ingresar a mi Billetera
       </button>
     </form>
-    <p class="text-[11px] text-center text-[#A3C4B2] mt-6">
+    <p class="text-[11px] text-center text-[#475569] mt-6">
       Tus datos están protegidos y aislados bajo cifrado PostgreSQL RLS.
     </p>
   </section>
@@ -145,7 +145,7 @@
             <h2 class="text-xl font-black text-[#0B1F3B] tracking-tight flex items-center gap-1.5">
               <span id="user-greeting-name" class="cursor-pointer hover:underline" title="Toca para cambiar cómo te llamamos">¡Hola!</span> <span>👋</span>
             </h2>
-            <p class="text-xs text-[#D7E7DD]">Este es el resumen de tu patrimonio hoy.</p>
+            <p class="text-xs text-[#475569] font-medium">Este es el resumen de tu patrimonio hoy.</p>
           </div>
           <div class="text-right">
             <span class="text-[10px] font-bold px-2.5 py-1 rounded-xl bg-white text-[#123A63] border border-[#C9D6E5] font-bold shadow-sm uppercase tracking-wider" id="today-date-badge">Hoy</span>
@@ -155,12 +155,12 @@
         <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B1F3B] via-[#0E284A] to-[#0B1F3B] p-5 border border-[#123A63] shadow-2xl">
           <div class="absolute -top-12 -right-12 w-36 h-36 bg-[#2F5D8C]/25 rounded-full blur-2xl"></div>
           <div class="flex justify-between items-start mb-2">
-            <span class="text-xs font-semibold uppercase tracking-wider text-[#D7E7DD]">Patrimonio Total</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-[#C9D6E5]">Patrimonio Total</span>
             <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-[#123A63] text-[#C9D6E5] border border-[#2F5D8C]/40 font-medium">En vivo</span>
           </div>
           <div class="flex items-baseline gap-2 mb-4">
             <span class="text-3xl font-extrabold text-white tracking-tight" id="kpi-patrimonio">S/ 0.00</span>
-            <span class="text-xs text-[#D7E7DD]" id="kpi-patrimonio-usd">($0.00 USD)</span>
+            <span class="text-xs text-[#C9D6E5]" id="kpi-patrimonio-usd">($0.00 USD)</span>
           </div>
 
           <div class="grid grid-cols-3 gap-2 pt-3 border-t border-[#1F6F54]/50">
@@ -242,12 +242,12 @@
       <section id="view-prestamos" class="space-y-4 tab-view hidden">
         <div class="rounded-3xl bg-gradient-to-br from-[#0E3B2E] via-[#144B3B] to-[#0E3B2E] p-5 border border-indigo-500/30 shadow-xl">
           <div class="flex justify-between items-start mb-2">
-            <span class="text-xs font-semibold uppercase tracking-wider text-[#D7E7DD]">Cartera de Préstamos</span>
-            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-[#D7E7DD] font-medium">Microcréditos</span>
+            <span class="text-xs font-semibold uppercase tracking-wider text-[#C9D6E5]">Cartera de Préstamos</span>
+            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-[#475569] font-medium">Microcréditos</span>
           </div>
           <div class="flex items-baseline gap-2 mb-3">
             <span class="text-3xl font-extrabold text-white" id="loans-total-capital">S/ 0.00</span>
-            <span class="text-xs text-[#D7E7DD]">en cartera activa</span>
+            <span class="text-xs text-[#C9D6E5]">en cartera activa</span>
           </div>
           <p class="text-xs text-[#F6FBF7]">
             Interés mensual estimado: <strong class="text-[#5FB88A] font-bold" id="loans-monthly-interest">S/ 0.00/mes</strong>
@@ -268,7 +268,7 @@
       <section id="view-movimientos" class="space-y-4 tab-view hidden">
         <div class="flex items-center justify-between">
           <h2 class="text-sm font-bold text-[#0B1F3B]">Historial de Movimientos</h2>
-          <span class="text-xs text-[#D7E7DD]" id="count-tx">0 registros</span>
+          <span class="text-xs text-[#475569]" id="count-tx">0 registros</span>
         </div>
         <div class="space-y-2.5" id="list-transacciones"></div>
       </section>
@@ -282,7 +282,7 @@
             </div>
             <div>
               <h2 class="text-base font-bold text-white">Atajo de Apple Wallet</h2>
-              <p class="text-xs text-[#D7E7DD]">Automatiza tus gastos en 1 segundo</p>
+              <p class="text-xs text-[#475569]">Automatiza tus gastos en 1 segundo</p>
             </div>
           </div>
 
@@ -291,7 +291,7 @@
           </p>
 
           <div class="p-3.5 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] space-y-2 font-mono text-[11px]">
-            <div class="text-[#D7E7DD] text-[10px] uppercase font-bold tracking-wider">Tu User ID para el Atajo:</div>
+            <div class="text-[#475569] text-[10px] uppercase font-bold tracking-wider">Tu User ID para el Atajo:</div>
             <div class="text-[#5FB88A] break-all select-all font-semibold" id="display-user-id">Inicia sesión para ver tu ID</div>
           </div>
 
@@ -311,7 +311,7 @@
           <span class="text-[10px] font-medium mt-1">Resumen</span>
         </button>
 
-        <button class="nav-tab flex flex-col items-center py-1 text-[#D7E7DD] hover:text-slate-200 transition-colors" data-view="prestamos">
+        <button class="nav-tab flex flex-col items-center py-1 text-[#C9D6E5]/70 hover:text-white transition-colors" data-view="prestamos">
           <i data-lucide="trending-up" class="w-5 h-5"></i>
           <span class="text-[10px] font-medium mt-1">Préstamos</span>
         </button>
@@ -320,12 +320,12 @@
           <i data-lucide="plus" class="w-6 h-6 stroke-[2.5]"></i>
         </button>
 
-        <button class="nav-tab flex flex-col items-center py-1 text-[#D7E7DD] hover:text-slate-200 transition-colors" data-view="movimientos">
+        <button class="nav-tab flex flex-col items-center py-1 text-[#C9D6E5]/70 hover:text-white transition-colors" data-view="movimientos">
           <i data-lucide="receipt" class="w-5 h-5"></i>
           <span class="text-[10px] font-medium mt-1">Movimientos</span>
         </button>
 
-        <button class="nav-tab flex flex-col items-center py-1 text-[#D7E7DD] hover:text-slate-200 transition-colors" data-view="atajos">
+        <button class="nav-tab flex flex-col items-center py-1 text-[#C9D6E5]/70 hover:text-white transition-colors" data-view="atajos">
           <i data-lucide="zap" class="w-5 h-5"></i>
           <span class="text-[10px] font-medium mt-1">Atajos</span>
         </button>
@@ -344,7 +344,7 @@
       </div>
 
       <form id="form-tx" class="space-y-3.5">
-        <div class="grid grid-cols-3 gap-1.5 p-1 bg-[#071711] rounded-2xl border border-[#1F6F54]/50">
+        <div class="grid grid-cols-3 gap-1.5 p-1.5 bg-[#F1F5F9] rounded-2xl border border-[#CBD5E1]">
           <button type="button" id="tab-tipo-gasto" class="py-2 text-[11px] font-bold rounded-xl bg-rose-500 text-white transition-all">Gasto</button>
           <button type="button" id="tab-tipo-ingreso" class="py-2 text-[11px] font-bold rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B] transition-all">Ingreso</button>
           <button type="button" id="tab-tipo-transfer" class="py-2 text-[11px] font-bold rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B] transition-all">Invertir / Mover</button>
@@ -353,7 +353,7 @@
         <div>
           <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Monto (S/)</label>
           <div class="relative">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-[#D7E7DD]">S/</span>
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-[#475569]">S/</span>
             <input type="number" step="0.01" id="input-monto" required placeholder="0.00" class="w-full pl-12 pr-4 py-3 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-2xl font-black text-[#0B1F3B] focus:outline-none focus:border-[#5FB88A]">
           </div>
         </div>
@@ -374,7 +374,7 @@
         <!-- Campo de Cuenta Destino (solo para Invertir / Mover) -->
         <div id="box-cuenta-destino" class="hidden">
           <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Cuenta Destino / Inversión</label>
-          <select id="select-cuenta-destino" class="w-full px-4 py-2.5 bg-[#071711] border border-indigo-500/40 rounded-2xl text-sm text-[#0B1F3B] focus:outline-none focus:border-[#5FB88A]"></select>
+          <select id="select-cuenta-destino" class="w-full px-4 py-2.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded-2xl text-sm text-[#0B1F3B] focus:outline-none focus:border-[#123A63]"></select>
         </div>
 
         <div id="box-categoria">
@@ -387,7 +387,7 @@
           <div id="inline-new-cat-box" class="hidden mt-2 p-2 rounded-xl bg-[#071711] border border-emerald-500/30 flex gap-2">
             <input type="text" id="input-new-cat-name" placeholder="Nombre de categoría..." class="flex-1 px-3 py-1 bg-[#0E3B2E] border border-[#1F6F54]/40 rounded-lg text-xs text-white">
             <button type="button" id="btn-save-inline-cat" class="px-3 py-1 bg-[#5FB88A] text-[#0E3B2E] font-black rounded-lg text-xs font-bold">Crear</button>
-            <button type="button" id="btn-cancel-inline-cat" class="px-2 py-1 text-[#D7E7DD] text-xs">✕</button>
+            <button type="button" id="btn-cancel-inline-cat" class="px-2 py-1 text-[#475569] text-xs">✕</button>
           </div>
         </div>
 
@@ -586,7 +586,7 @@
       <div class="flex justify-between items-center">
         <div>
           <h3 class="text-base font-bold text-[#0B1F3B]">Aportar a Meta</h3>
-          <p class="text-[11px] text-[#D7E7DD]" id="aporte-meta-nombre-display">Nombre de Meta</p>
+          <p class="text-xs text-[#475569] font-medium" id="aporte-meta-nombre-display">Nombre de Meta</p>
         </div>
         <button id="btn-close-modal-aporte" class="p-1.5 rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B]">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -598,7 +598,7 @@
         <div>
           <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Monto a Aportar (S/)</label>
           <div class="relative">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-[#D7E7DD]">S/</span>
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-[#475569]">S/</span>
             <input type="number" step="0.01" id="aporte-monto" required placeholder="0.00" class="w-full pl-12 pr-4 py-3 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-2xl font-black text-[#0B1F3B] focus:outline-none focus:border-[#5FB88A]">
           </div>
         </div>
@@ -625,7 +625,7 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <p class="text-xs text-[#D7E7DD]">Personaliza cómo quieres que Financiere te salude en la app.</p>
+      <p class="text-xs text-[#475569] font-medium">Personaliza cómo quieres que Financiere te salude en la app.</p>
       <form id="form-user-name" class="space-y-4">
         <div>
           <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Tu Nombre o Apodo</label>
@@ -644,7 +644,7 @@
       <div class="flex justify-between items-center">
         <div>
           <h3 class="text-base font-bold text-[#0B1F3B]">Actualizar Valor de Inversión</h3>
-          <p class="text-[11px] text-[#D7E7DD]">Ajusta el valor actual de mercado de tu broker o fondo.</p>
+          <p class="text-xs text-[#475569] font-medium">Ajusta el valor actual de mercado de tu broker o fondo.</p>
         </div>
         <button id="btn-close-modal-inv" class="p-1.5 rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B]">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -660,13 +660,13 @@
         <div>
           <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Nuevo Valor Actual</label>
           <div class="relative">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-[#D7E7DD]">Monto</span>
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[#475569]">Monto</span>
             <input type="number" step="0.01" id="input-inv-new-balance" required placeholder="0.00" class="w-full pl-20 pr-4 py-3 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-2xl font-black text-[#0B1F3B] focus:outline-none focus:border-[#5FB88A]">
           </div>
-          <p class="text-[10px] text-[#A3C4B2] mt-1" id="inv-current-balance-hint">Saldo anterior: 0.00</p>
+          <p class="text-xs text-[#475569] font-medium mt-1" id="inv-current-balance-hint">Saldo anterior: 0.00</p>
         </div>
 
-        <button type="submit" class="w-full py-3.5 rounded-2xl bg-[#0B1F3B] hover:bg-[#123A63] text-white font-bold text-sm transition-all active:scale-95 shadow-lg shadow-[#5FB88A]/20">
+        <button type="submit" class="w-full py-3.5 rounded-2xl bg-[#123A63] hover:bg-[#2F5D8C] text-white font-bold text-sm transition-all active:scale-95 shadow-lg shadow-[#123A63]/25">
           Actualizar Patrimonio
         </button>
       </form>
@@ -682,7 +682,7 @@
             <i data-lucide="settings" class="w-5 h-5 text-[#123A63]"></i>
             Configuración & Preferencias
           </h3>
-          <p class="text-[11px] text-[#2F5D8C]">Personaliza tu perfil, reportes y tipo de cambio.</p>
+          <p class="text-xs text-[#475569] font-medium">Personaliza tu perfil, reportes y tipo de cambio.</p>
         </div>
         <button id="btn-close-modal-settings" class="p-1.5 rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B]">
           <i data-lucide="x" class="w-5 h-5"></i>

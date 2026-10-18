@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiere-v5-navy';
+const CACHE_NAME = 'financiere-v6-contrast-fix';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
