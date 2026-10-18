@@ -743,6 +743,23 @@
           </div>
         </div>
 
+        <!-- 4. Seguridad & Cambiar Contraseña -->
+        <div class="p-3.5 bg-[#F2F5F8] rounded-2xl border border-[#C9D6E5] space-y-2.5">
+          <label class="text-[11px] font-bold text-[#0B1F3B] uppercase tracking-wider block">4. Seguridad & Contraseña</label>
+          <div>
+            <label class="text-[10px] font-semibold text-[#123A63] block mb-1">Nueva Contraseña</label>
+            <input type="password" id="config-new-password" placeholder="Mínimo 6 caracteres" class="w-full px-3 py-2 bg-white border border-[#C9D6E5] rounded-xl text-xs text-[#0B1F3B] focus:outline-none focus:border-[#2F5D8C]">
+          </div>
+          <div>
+            <label class="text-[10px] font-semibold text-[#123A63] block mb-1">Confirmar Nueva Contraseña</label>
+            <input type="password" id="config-confirm-password" placeholder="Repite la contraseña" class="w-full px-3 py-2 bg-white border border-[#C9D6E5] rounded-xl text-xs text-[#0B1F3B] focus:outline-none focus:border-[#2F5D8C]">
+          </div>
+          <button type="button" id="btn-update-password" class="w-full py-2.5 rounded-xl bg-[#123A63] hover:bg-[#2F5D8C] text-white font-bold text-xs transition-all active:scale-95 shadow">
+            Actualizar Mi Contraseña
+          </button>
+          <p id="msg-password-status" class="text-[10px] hidden text-center font-bold mt-1"></p>
+        </div>
+
         <button type="submit" id="btn-save-settings" class="w-full py-3.5 rounded-2xl bg-[#0B1F3B] hover:bg-[#123A63] text-white font-bold text-sm transition-all active:scale-95 shadow-lg shadow-[#0B1F3B]/30">
           Guardar Configuración
         </button>

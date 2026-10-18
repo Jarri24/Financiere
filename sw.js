@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiere-v7-auth-fixed';
+const CACHE_NAME = 'financiere-v8-password-management';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

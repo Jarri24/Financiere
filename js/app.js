@@ -1082,6 +1082,45 @@ function setupModals() {
       renderCuentas();
     };
   }
+
+  // Handlers para Cambiar Contraseña
+  const btnUpdatePass = document.getElementById('btn-update-password');
+  if (btnUpdatePass) {
+    btnUpdatePass.onclick = async () => {
+      const p1 = document.getElementById('config-new-password').value.trim();
+      const p2 = document.getElementById('config-confirm-password').value.trim();
+      const msg = document.getElementById('msg-password-status');
+      if (!p1 || p1.length < 6) {
+        msg.textContent = 'La contraseña debe tener al menos 6 caracteres';
+        msg.className = 'text-[10px] text-rose-600 block text-center font-bold mt-1';
+        return;
+      }
+      if (p1 !== p2) {
+        msg.textContent = 'Las contraseñas no coinciden';
+        msg.className = 'text-[10px] text-rose-600 block text-center font-bold mt-1';
+        return;
+      }
+
+      btnUpdatePass.disabled = true;
+      btnUpdatePass.innerText = 'Actualizando contraseña...';
+
+      const { data, error } = await db.auth.updateUser({ password: p1 });
+
+      btnUpdatePass.disabled = false;
+      btnUpdatePass.innerText = 'Actualizar Mi Contraseña';
+
+      if (error) {
+        msg.textContent = 'Error: ' + error.message;
+        msg.className = 'text-[10px] text-rose-600 block text-center font-bold mt-1';
+      } else {
+        msg.textContent = '¡Contraseña actualizada con éxito!';
+        msg.className = 'text-[10px] text-emerald-600 block text-center font-bold mt-1';
+        document.getElementById('config-new-password').value = '';
+        document.getElementById('config-confirm-password').value = '';
+        setTimeout(() => { msg.className = 'hidden'; }, 3500);
+      }
+    };
+  }
 }
 }
 
