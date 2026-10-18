@@ -68,18 +68,31 @@ async function setAuthenticatedUser(user) {
   document.getElementById('user-display-email').innerText = user.email.toUpperCase();
   document.getElementById('badge-auth-status').className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
 
-  let displayName = 'Usuario';
-  if (user.user_metadata?.full_name) {
-    displayName = user.user_metadata.full_name;
-  } else if (user.user_metadata?.name) {
-    displayName = user.user_metadata.name;
-  } else if (user.email) {
-    const raw = user.email.split('@')[0].replace(/[0-9_.]/g, '');
-    displayName = raw.charAt(0).toUpperCase() + raw.slice(1);
+  // Obtener nombre preferido de localStorage o preguntar al nuevo usuario
+  let savedName = localStorage.getItem('financiere_name_' + user.id);
+  if (!savedName) {
+    if (user.email && user.email.toLowerCase().includes('jarinson')) {
+      savedName = 'Jarinson';
+      localStorage.setItem('financiere_name_' + user.id, 'Jarinson');
+    } else {
+      // Si es un usuario nuevo (ej. novia), preguntar cómo le gustaría que la llamemos
+      setTimeout(() => {
+        const modalName = document.getElementById('modal-name');
+        if (modalName) modalName.classList.remove('hidden');
+      }, 600);
+      savedName = 'Usuario';
+    }
   }
 
   const elGreeting = document.getElementById('user-greeting-name');
-  if (elGreeting) elGreeting.innerText = `¡Hola, ${displayName}!`;
+  if (elGreeting) {
+    elGreeting.innerText = `¡Hola, ${savedName}!`;
+    elGreeting.onclick = () => {
+      document.getElementById('input-preferred-name').value = savedName === 'Usuario' ? '' : savedName;
+      document.getElementById('modal-name').classList.remove('hidden');
+      document.getElementById('input-preferred-name').focus();
+    };
+  }
 
   const elDate = document.getElementById('today-date-badge');
   if (elDate) {
@@ -163,13 +176,19 @@ async function loadUserData() {
 }
 
 function renderDashboard() {
-  let totalPEN = 0;
+  let ahorrosPEN = 0;
+  let invPEN = 0;
   let loansPEN = 0;
 
   state.cuentas.forEach(c => {
     const val = Number(c.saldo_actual || 0);
     const converted = c.moneda === 'USD' ? val * state.tc : val;
-    totalPEN += converted;
+
+    if (c.tipo === 'inversion' || c.tipo === 'dpf') {
+      invPEN += converted;
+    } else {
+      ahorrosPEN += converted;
+    }
   });
 
   state.prestamos.forEach(p => {
@@ -178,13 +197,21 @@ function renderDashboard() {
     }
   });
 
-  const grandTotal = totalPEN + loansPEN;
+  // La suma de los 3 componentes da el Patrimonio Total
+  const grandTotal = ahorrosPEN + invPEN + loansPEN;
   const grandUSD = grandTotal / state.tc;
 
   document.getElementById('kpi-patrimonio').innerText = formatPEN(grandTotal);
   document.getElementById('kpi-patrimonio-usd').innerText = `(${formatUSD(grandUSD)} USD)`;
-  document.getElementById('kpi-inversiones').innerText = formatPEN(totalPEN);
-  document.getElementById('kpi-prestamos-total').innerText = formatPEN(loansPEN);
+  
+  const elAhorros = document.getElementById('kpi-ahorros');
+  if (elAhorros) elAhorros.innerText = formatPEN(ahorrosPEN);
+
+  const elInv = document.getElementById('kpi-inversiones');
+  if (elInv) elInv.innerText = formatPEN(invPEN);
+
+  const elLoans = document.getElementById('kpi-prestamos-total');
+  if (elLoans) elLoans.innerText = formatPEN(loansPEN);
 }
 
 // Render Cuentas
@@ -531,11 +558,14 @@ function setupModals() {
       if (t) t.className = 'py-2 text-[11px] font-bold rounded-xl text-[#D7E7DD] hover:text-white transition-all';
     });
 
+    const inputComercio = document.getElementById('input-comercio');
+
     if (tipo === 'gasto') {
       tabGasto.className = 'py-2 text-[11px] font-bold rounded-xl bg-rose-500 text-white transition-all';
       if (boxCuentaDest) boxCuentaDest.classList.add('hidden');
       if (boxCat) boxCat.classList.remove('hidden');
-      if (labelComercio) labelComercio.innerText = 'Comercio / Descripción';
+      if (labelComercio) labelComercio.innerText = 'Comercio / Detalle';
+      if (inputComercio) inputComercio.placeholder = 'Ej: Supermercado, Restaurante, Farmacia, Transporte';
       if (labelCtaOrigen) labelCtaOrigen.innerText = 'Cuenta / Tarjeta (De donde sale)';
       if (btnSubmitTx) btnSubmitTx.innerText = 'Guardar Gasto';
     } else if (tipo === 'ingreso') {
@@ -543,6 +573,7 @@ function setupModals() {
       if (boxCuentaDest) boxCuentaDest.classList.add('hidden');
       if (boxCat) boxCat.classList.remove('hidden');
       if (labelComercio) labelComercio.innerText = 'Origen / Concepto';
+      if (inputComercio) inputComercio.placeholder = 'Ej: Sueldo mensual, Bono, Venta, Honorarios';
       if (labelCtaOrigen) labelCtaOrigen.innerText = 'Cuenta Destino (A donde ingresa)';
       if (btnSubmitTx) btnSubmitTx.innerText = 'Guardar Ingreso';
     } else if (tipo === 'transferencia') {
@@ -550,6 +581,7 @@ function setupModals() {
       if (boxCuentaDest) boxCuentaDest.classList.remove('hidden');
       if (boxCat) boxCat.classList.add('hidden');
       if (labelComercio) labelComercio.innerText = 'Detalle de la Inversión / Movimiento';
+      if (inputComercio) inputComercio.placeholder = 'Ej: Depósito a Plazo, Aporte a Fondo Mutuo, Compra Acciones';
       if (labelCtaOrigen) labelCtaOrigen.innerText = 'Cuenta Origen (De donde sale)';
       if (btnSubmitTx) btnSubmitTx.innerText = 'Confirmar Transferencia / Inversión';
     }
@@ -559,9 +591,11 @@ function setupModals() {
     document.getElementById('input-monto').focus();
   };
 
+  const btnQuickInvest = document.getElementById('btn-quick-invest');
   if (btnFloating) btnFloating.onclick = () => openTx('gasto');
   if (btnQuickExp) btnQuickExp.onclick = () => openTx('gasto');
   if (btnQuickInc) btnQuickInc.onclick = () => openTx('ingreso');
+  if (btnQuickInvest) btnQuickInvest.onclick = () => openTx('transferencia');
 
   if (tabGasto) tabGasto.onclick = () => openTx('gasto');
   if (tabIngreso) tabIngreso.onclick = () => openTx('ingreso');
@@ -842,6 +876,97 @@ function setupModals() {
       btnCopy.innerText = '¡Copiado con tu User ID!';
       setTimeout(() => btnCopy.innerHTML = '<i data-lucide="copy" class="w-4 h-4"></i> Copiar Configuración del Atajo', 2000);
     };
+  // Handlers para Nombre de Usuario
+  const modalName = document.getElementById('modal-name');
+  const btnCloseName = document.getElementById('btn-close-modal-name');
+  const formName = document.getElementById('form-user-name');
+
+  if (btnCloseName) btnCloseName.onclick = () => modalName.classList.add('hidden');
+  if (formName) {
+    formName.onsubmit = (e) => {
+      e.preventDefault();
+      const newName = document.getElementById('input-preferred-name').value.trim();
+      if (newName && state.user) {
+        localStorage.setItem('financiere_name_' + state.user.id, newName);
+        const elGreeting = document.getElementById('user-greeting-name');
+        if (elGreeting) elGreeting.innerText = `¡Hola, ${newName}!`;
+        modalName.classList.add('hidden');
+      }
+    };
+  }
+
+  // Handlers para Actualizar Inversiones (editable)
+  const modalInv = document.getElementById('modal-update-investment');
+  const btnCloseInv = document.getElementById('btn-close-modal-inv');
+  const btnQuickEditInv = document.getElementById('btn-quick-edit-inv');
+  const formUpdateInv = document.getElementById('form-update-investment');
+  const selInvAccount = document.getElementById('select-inv-account');
+  const inputInvNewBalance = document.getElementById('input-inv-new-balance');
+  const invBalanceHint = document.getElementById('inv-current-balance-hint');
+
+  if (btnCloseInv) btnCloseInv.onclick = () => modalInv.classList.add('hidden');
+
+  if (btnQuickEditInv) {
+    btnQuickEditInv.onclick = () => {
+      const invAccounts = state.cuentas.filter(c => c.tipo === 'inversion' || c.tipo === 'dpf');
+      if (invAccounts.length === 0) {
+        alert("Primero crea una cuenta de tipo 'Inversiones' o 'Plazo Fijo (DPF)' en 'Mis Cuentas' para poder registrar y actualizar su valor de mercado.");
+        document.getElementById('modal-cuenta').classList.remove('hidden');
+        return;
+      }
+
+      selInvAccount.innerHTML = invAccounts.map(c => `<option value="${c.id}">${c.nombre} (${c.moneda} - Saldo: ${formatPEN(c.saldo_actual)})</option>`).join('');
+      
+      const firstAcc = invAccounts[0];
+      inputInvNewBalance.value = firstAcc.saldo_actual;
+      invBalanceHint.innerText = `Valor actual registrado: ${formatPEN(firstAcc.saldo_actual)}`;
+      modalInv.classList.remove('hidden');
+      inputInvNewBalance.focus();
+    };
+  }
+
+  if (selInvAccount) {
+    selInvAccount.onchange = () => {
+      const acc = state.cuentas.find(c => c.id === selInvAccount.value);
+      if (acc) {
+        inputInvNewBalance.value = acc.saldo_actual;
+        invBalanceHint.innerText = `Valor actual registrado: ${formatPEN(acc.saldo_actual)}`;
+      }
+    };
+  }
+
+  if (formUpdateInv) {
+    formUpdateInv.onsubmit = async (e) => {
+      e.preventDefault();
+      const accId = selInvAccount.value;
+      const newBal = parseFloat(inputInvNewBalance.value);
+      const acc = state.cuentas.find(c => c.id === accId);
+      if (!acc) return;
+
+      const diff = newBal - Number(acc.saldo_actual || 0);
+      const { error } = await db.from('cuentas').update({ saldo_actual: newBal, updated_at: new Date().toISOString() }).eq('id', accId);
+
+      if (!error && diff !== 0) {
+        await db.from('transacciones').insert([{
+          fecha: new Date().toISOString().split('T')[0],
+          tipo: diff > 0 ? 'ingreso' : 'gasto',
+          monto: Math.abs(diff),
+          moneda: acc.moneda,
+          cuenta_origen_id: accId,
+          comercio: diff > 0 ? `Rendimiento / Ganancia en ${acc.nombre}` : `Ajuste de mercado en ${acc.nombre}`,
+          user_id: state.user.id
+        }]);
+      }
+
+      if (error) {
+        alert('Error: ' + error.message);
+      } else {
+        modalInv.classList.add('hidden');
+        await loadUserData();
+      }
+    };
+  }
+
   }
 }
 

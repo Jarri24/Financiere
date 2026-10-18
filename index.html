@@ -144,57 +144,69 @@
         <div class="flex items-center justify-between pt-1 pb-1">
           <div>
             <h2 class="text-xl font-black text-white tracking-tight flex items-center gap-1.5">
-              <span id="user-greeting-name">¡Hola!</span> <span>👋</span>
+              <span id="user-greeting-name" class="cursor-pointer hover:underline" title="Toca para cambiar cómo te llamamos">¡Hola!</span> <span>👋</span>
             </h2>
             <p class="text-xs text-[#D7E7DD]">Este es el resumen de tu patrimonio hoy.</p>
           </div>
           <div class="text-right">
-            <span class="text-[10px] font-bold px-2.5 py-1 rounded-xl bg-slate-800/80 text-[#5FB88A] border border-[#1F6F54]/40/60 uppercase tracking-wider" id="today-date-badge">Hoy</span>
+            <span class="text-[10px] font-bold px-2.5 py-1 rounded-xl bg-[#0E3B2E] text-[#5FB88A] border border-[#1F6F54]/60 uppercase tracking-wider" id="today-date-badge">Hoy</span>
           </div>
         </div>
 
-        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0E3B2E] via-[#144B3B] to-[#0E3B2E] p-5 border border-[#1F6F54]/40/60 shadow-2xl">
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0E3B2E] via-[#144B3B] to-[#0E3B2E] p-5 border border-[#1F6F54]/50 shadow-2xl">
           <div class="absolute -top-12 -right-12 w-36 h-36 bg-[#5FB88A]/15 rounded-full blur-2xl"></div>
           <div class="flex justify-between items-start mb-2">
             <span class="text-xs font-semibold uppercase tracking-wider text-[#D7E7DD]">Patrimonio Total</span>
-            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-[#5FB88A] border border-emerald-500/20 font-medium">En vivo</span>
+            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-[#1F6F54]/40 text-[#5FB88A] border border-[#5FB88A]/30 font-medium">En vivo</span>
           </div>
           <div class="flex items-baseline gap-2 mb-4">
             <span class="text-3xl font-extrabold text-white tracking-tight" id="kpi-patrimonio">S/ 0.00</span>
             <span class="text-xs text-[#D7E7DD]" id="kpi-patrimonio-usd">($0.00 USD)</span>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 pt-3 border-t border-[#1F6F54]/40/50">
-            <div class="bg-[#071711]/40 rounded-2xl p-2.5 border border-[#1F6F54]/50/80">
-              <p class="text-[10px] text-[#D7E7DD] font-medium">Ahorros & Cuentas</p>
-              <p class="text-sm font-bold text-[#5FB88A] mt-0.5" id="kpi-inversiones">S/ 0.00</p>
+          <div class="grid grid-cols-3 gap-2 pt-3 border-t border-[#1F6F54]/50">
+            <div class="bg-[#071711]/50 rounded-2xl p-2.5 border border-[#1F6F54]/50">
+              <p class="text-[9px] text-[#D7E7DD] font-medium leading-tight">Ahorros & Cuentas</p>
+              <p class="text-xs font-bold text-[#F6FBF7] mt-0.5" id="kpi-ahorros">S/ 0.00</p>
             </div>
-            <div class="bg-[#071711]/40 rounded-2xl p-2.5 border border-[#1F6F54]/50/80">
-              <p class="text-[10px] text-[#D7E7DD] font-medium">Préstamos Activos</p>
-              <p class="text-sm font-bold text-[#5FB88A] mt-0.5" id="kpi-prestamos-total">S/ 0.00</p>
+            <div class="bg-[#071711]/50 rounded-2xl p-2.5 border border-[#5FB88A]/40 relative">
+              <div class="flex justify-between items-start">
+                <p class="text-[9px] text-[#D7E7DD] font-medium leading-tight">Inversiones</p>
+                <button id="btn-quick-edit-inv" class="text-[10px] text-[#5FB88A] hover:text-white" title="Actualizar valor de mercado">✎</button>
+              </div>
+              <p class="text-xs font-bold text-[#5FB88A] mt-0.5" id="kpi-inversiones">S/ 0.00</p>
+            </div>
+            <div class="bg-[#071711]/50 rounded-2xl p-2.5 border border-[#1F6F54]/50">
+              <p class="text-[9px] text-[#D7E7DD] font-medium leading-tight">Préstamos Activos</p>
+              <p class="text-xs font-bold text-[#A4D7BD] mt-0.5" id="kpi-prestamos-total">S/ 0.00</p>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <button id="btn-quick-expense" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-rose-500/10 to-rose-600/5 border border-rose-500/20 hover:border-rose-500/40 text-left transition-all active:scale-95">
-            <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold">
-              <i data-lucide="minus-circle" class="w-5 h-5"></i>
+        <!-- 3 Botones de Acción Rápida: Gasto, Ingreso, Invertir -->
+        <div class="grid grid-cols-3 gap-2">
+          <button id="btn-quick-expense" class="flex flex-col items-center p-3 rounded-2xl bg-[#0E3B2E] border border-rose-500/20 hover:border-rose-500/40 text-center transition-all active:scale-95 shadow-md">
+            <div class="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-300 flex items-center justify-center font-bold mb-1">
+              <i data-lucide="minus-circle" class="w-4 h-4"></i>
             </div>
-            <div>
-              <div class="text-xs font-bold text-white">Nuevo Gasto</div>
-              <div class="text-[10px] text-[#D7E7DD]">Registrar consumo</div>
-            </div>
+            <div class="text-[11px] font-bold text-[#F6FBF7]">Gasto</div>
+            <div class="text-[9px] text-[#D7E7DD]">Consumo</div>
           </button>
 
-          <button id="btn-quick-income" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20 hover:border-emerald-500/40 text-left transition-all active:scale-95">
-            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-[#5FB88A] flex items-center justify-center font-bold">
-              <i data-lucide="plus-circle" class="w-5 h-5"></i>
+          <button id="btn-quick-income" class="flex flex-col items-center p-3 rounded-2xl bg-[#0E3B2E] border border-[#5FB88A]/30 hover:border-[#5FB88A]/60 text-center transition-all active:scale-95 shadow-md">
+            <div class="w-8 h-8 rounded-xl bg-[#5FB88A]/20 text-[#5FB88A] flex items-center justify-center font-bold mb-1">
+              <i data-lucide="plus-circle" class="w-4 h-4"></i>
             </div>
-            <div>
-              <div class="text-xs font-bold text-white">Nuevo Ingreso</div>
-              <div class="text-[10px] text-[#D7E7DD]">Sueldo, cobro o extra</div>
+            <div class="text-[11px] font-bold text-[#F6FBF7]">Ingreso</div>
+            <div class="text-[9px] text-[#D7E7DD]">Sueldo/Bono</div>
+          </button>
+
+          <button id="btn-quick-invest" class="flex flex-col items-center p-3 rounded-2xl bg-[#0E3B2E] border border-[#1F6F54] hover:border-[#5FB88A] text-center transition-all active:scale-95 shadow-md">
+            <div class="w-8 h-8 rounded-xl bg-[#1F6F54]/60 text-[#5FB88A] flex items-center justify-center font-bold mb-1">
+              <i data-lucide="trending-up" class="w-4 h-4"></i>
             </div>
+            <div class="text-[11px] font-bold text-[#F6FBF7]">Invertir</div>
+            <div class="text-[9px] text-[#D7E7DD]">Mover activo</div>
           </button>
         </div>
 
@@ -605,6 +617,63 @@
       </form>
     </div>
   </div>
+  <!-- MODAL: CAMBIAR NOMBRE DE USUARIO -->
+  <div id="modal-name" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-all">
+    <div class="bg-[#0E3B2E] border border-[#1F6F54] rounded-3xl w-full max-w-sm p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="text-base font-bold text-white">¿Cómo te llamamos?</h3>
+        <button id="btn-close-modal-name" class="p-1.5 rounded-xl text-[#D7E7DD] hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <p class="text-xs text-[#D7E7DD]">Personaliza cómo quieres que Financiere te salude en la app.</p>
+      <form id="form-user-name" class="space-y-4">
+        <div>
+          <label class="text-[11px] font-semibold text-[#D7E7DD] block mb-1">Tu Nombre o Apodo</label>
+          <input type="text" id="input-preferred-name" required placeholder="Ej: Jarinson, Mariana, etc." class="w-full px-4 py-2.5 bg-[#071711] border border-[#1F6F54] rounded-2xl text-sm text-white focus:outline-none focus:border-[#5FB88A]">
+        </div>
+        <button type="submit" class="w-full py-3 rounded-2xl bg-[#5FB88A] hover:bg-[#7EC6A1] text-[#0E3B2E] font-black text-sm transition-all active:scale-95 shadow-lg shadow-[#5FB88A]/20">
+          Guardar Nombre
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ACTUALIZAR VALOR DE MERCADO DE INVERSION -->
+  <div id="modal-update-investment" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-[#0E3B2E] border border-[#1F6F54] rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-base font-bold text-white">Actualizar Valor de Inversión</h3>
+          <p class="text-[11px] text-[#D7E7DD]">Ajusta el valor actual de mercado de tu broker o fondo.</p>
+        </div>
+        <button id="btn-close-modal-inv" class="p-1.5 rounded-xl text-[#D7E7DD] hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-update-investment" class="space-y-3.5">
+        <div>
+          <label class="text-[11px] font-semibold text-[#D7E7DD] block mb-1">Seleccionar Inversión</label>
+          <select id="select-inv-account" class="w-full px-4 py-2.5 bg-[#071711] border border-[#1F6F54] rounded-2xl text-sm text-white focus:outline-none focus:border-[#5FB88A]"></select>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-[#D7E7DD] block mb-1">Nuevo Valor Actual</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-[#D7E7DD]">Monto</span>
+            <input type="number" step="0.01" id="input-inv-new-balance" required placeholder="0.00" class="w-full pl-20 pr-4 py-3 bg-[#071711] border border-[#1F6F54] rounded-2xl text-2xl font-black text-white focus:outline-none focus:border-[#5FB88A]">
+          </div>
+          <p class="text-[10px] text-[#A3C4B2] mt-1" id="inv-current-balance-hint">Saldo anterior: 0.00</p>
+        </div>
+
+        <button type="submit" class="w-full py-3.5 rounded-2xl bg-[#5FB88A] hover:bg-[#7EC6A1] text-[#0E3B2E] font-black text-sm transition-all active:scale-95 shadow-lg shadow-[#5FB88A]/20">
+          Actualizar Patrimonio
+        </button>
+      </form>
+    </div>
+  </div>
+
 
   <script src="js/app.js"></script>
 </body>
