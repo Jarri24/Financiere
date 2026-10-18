@@ -315,7 +315,7 @@
 
         <div>
           <label class="text-[11px] font-semibold text-slate-400 block mb-1">Comercio / Descripción</label>
-          <input type="text" id="input-comercio" placeholder="Ej: Menú, Grifo, Plaza Vea" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
+          <input type="text" id="input-comercio" placeholder="Ej: Supermercado, Almuerzo, Transporte, Servicios" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
         </div>
 
         <div>
@@ -360,23 +360,47 @@
       <form id="form-cuenta" class="space-y-3.5">
         <div>
           <label class="text-[11px] font-semibold text-slate-400 block mb-1">Nombre de la Cuenta</label>
-          <input type="text" id="cta-nombre" required placeholder="Ej: BCP Sueldo, BBVA Tarjeta, Billetera Yape" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
+          <input type="text" id="cta-nombre" required placeholder="Ej: Cuenta Sueldo, Tarjeta de Crédito, Billetera Digital" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="text-[11px] font-semibold text-slate-400 block mb-1">Institución / Banco</label>
+            <label class="text-[11px] font-semibold text-slate-400 block mb-1">Institución / Banco / Caja</label>
             <select id="cta-institucion" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
-              <option value="BCP">BCP</option>
-              <option value="BBVA">BBVA</option>
-              <option value="Interbank">Interbank</option>
-              <option value="Scotiabank">Scotiabank</option>
-              <option value="Yape">Yape</option>
-              <option value="Plin">Plin</option>
-              <option value="SIP">SIP</option>
-              <option value="eToro">eToro</option>
-              <option value="Efectivo">Efectivo</option>
-              <option value="Otro">Otro</option>
+              <optgroup label="Bancos Principales">
+                <option value="BCP">BCP</option>
+                <option value="BBVA">BBVA</option>
+                <option value="Interbank">Interbank</option>
+                <option value="Scotiabank">Scotiabank</option>
+                <option value="BanBif">BanBif</option>
+                <option value="Banco Pichincha">Banco Pichincha</option>
+                <option value="Banco de la Nación">Banco de la Nación</option>
+                <option value="Banco Falabella">Banco Falabella</option>
+                <option value="Banco Ripley">Banco Ripley</option>
+                <option value="MiBanco">MiBanco</option>
+                <option value="Banco GNB">Banco GNB</option>
+              </optgroup>
+              <optgroup label="Billeteras Digitales">
+                <option value="Yape">Yape</option>
+                <option value="Plin">Plin</option>
+                <option value="Agora">Agora</option>
+              </optgroup>
+              <optgroup label="Cajas & Financieras">
+                <option value="Caja Arequipa">Caja Arequipa</option>
+                <option value="Caja Huancayo">Caja Huancayo</option>
+                <option value="Caja Piura">Caja Piura</option>
+                <option value="Caja Cusco">Caja Cusco</option>
+                <option value="Caja Trujillo">Caja Trujillo</option>
+                <option value="Caja Sullana">Caja Sullana</option>
+                <option value="Caja Ica">Caja Ica</option>
+                <option value="Financiera Oh!">Financiera Oh!</option>
+                <option value="Financiera Qapaq">Financiera Qapaq</option>
+                <option value="Compartamos Financiera">Compartamos Financiera</option>
+              </optgroup>
+              <optgroup label="Otros">
+                <option value="Efectivo">Efectivo Físico</option>
+                <option value="OTRO">+ Agregar otra entidad...</option>
+              </optgroup>
             </select>
           </div>
 
@@ -390,6 +414,12 @@
               <option value="inversion">Inversiones</option>
             </select>
           </div>
+        </div>
+
+        <!-- Input para institución personalizada cuando se elija 'OTRO' -->
+        <div id="box-custom-institucion" class="hidden">
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Nombre de la Entidad / Banco / Financiera</label>
+          <input type="text" id="cta-institucion-custom" placeholder="Ej: Cooperativa XYZ, Fondo ABC" class="w-full px-4 py-2 bg-slate-950 border border-emerald-500/40 rounded-2xl text-sm text-white focus:outline-none">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -427,7 +457,7 @@
       <form id="form-prestamo" class="space-y-3.5">
         <div>
           <label class="text-[11px] font-semibold text-slate-400 block mb-1">Nombre del Deudor / Persona</label>
-          <input type="text" id="loan-deudor" required placeholder="Ej: Carlos M., Luz, Primo" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+          <input type="text" id="loan-deudor" required placeholder="Ej: Familiar, Amigo, Socio, Colega" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -444,7 +474,7 @@
 
         <div>
           <label class="text-[11px] font-semibold text-slate-400 block mb-1">Notas / Fecha de Cobro</label>
-          <input type="text" id="loan-notas" placeholder="Ej: Paga los 25 de cada mes" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+          <input type="text" id="loan-notas" placeholder="Ej: Pago mensual, 2 cuotas" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
         </div>
 
         <button type="submit" id="btn-submit-prestamo" class="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm transition-all active:scale-95 shadow-lg shadow-indigo-600/25">
@@ -467,7 +497,7 @@
       <form id="form-meta" class="space-y-3.5">
         <div>
           <label class="text-[11px] font-semibold text-slate-400 block mb-1">Nombre del Proyecto o Meta</label>
-          <input type="text" id="meta-nombre" required placeholder="Ej: Terreno Amazonas, Reconstrucción Casa, Viaje" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+          <input type="text" id="meta-nombre" required placeholder="Ej: Fondo de Emergencia, Vacaciones, Auto, Maestría" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -489,7 +519,7 @@
 
         <div>
           <label class="text-[11px] font-semibold text-slate-400 block mb-1">Notas / Estrategia</label>
-          <input type="text" id="meta-notas" placeholder="Ej: Separar 20% del sueldo mensual" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+          <input type="text" id="meta-notas" placeholder="Ej: Ahorro mensual del 20%" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
         </div>
 
         <button type="submit" id="btn-submit-meta" class="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm transition-all active:scale-95 shadow-lg shadow-indigo-600/25">

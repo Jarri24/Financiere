@@ -220,7 +220,7 @@ function renderMetas() {
   if (state.metas.length === 0) {
     container.innerHTML = `
       <div class="text-center py-6 px-4 rounded-2xl bg-slate-950/40 border border-dashed border-slate-800 space-y-2">
-        <p class="text-xs text-slate-400">Aún no has definido proyectos o metas de ahorro (ej: Terreno Amazonas, Casa, etc.).</p>
+        <p class="text-xs text-slate-400">Aún no has definido proyectos o metas de ahorro (ej: Fondo de Emergencia, Vacaciones, etc.).</p>
         <button onclick="document.getElementById('modal-meta').classList.remove('hidden')" class="px-3.5 py-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-bold hover:bg-indigo-500/20">
           + Crear mi primera meta
         </button>
@@ -563,12 +563,30 @@ function setupModals() {
     };
   }
 
+  const selInstitucion = document.getElementById('cta-institucion');
+  const boxCustomInst = document.getElementById('box-custom-institucion');
+  const inputCustomInst = document.getElementById('cta-institucion-custom');
+
+  if (selInstitucion && boxCustomInst) {
+    selInstitucion.onchange = () => {
+      if (selInstitucion.value === 'OTRO') {
+        boxCustomInst.classList.remove('hidden');
+        inputCustomInst.focus();
+      } else {
+        boxCustomInst.classList.add('hidden');
+      }
+    };
+  }
+
   const formCta = document.getElementById('form-cuenta');
   if (formCta) {
     formCta.onsubmit = async (e) => {
       e.preventDefault();
       const nombre = document.getElementById('cta-nombre').value.trim();
-      const institucion = document.getElementById('cta-institucion').value;
+      let institucion = document.getElementById('cta-institucion').value;
+      if (institucion === 'OTRO') {
+        institucion = document.getElementById('cta-institucion-custom').value.trim() || 'Otro';
+      }
       const tipo = document.getElementById('cta-tipo').value;
       const moneda = document.getElementById('cta-moneda').value;
       const saldo = parseFloat(document.getElementById('cta-saldo').value || 0);
@@ -587,6 +605,7 @@ function setupModals() {
       } else {
         modalCta.classList.add('hidden');
         formCta.reset();
+        if (boxCustomInst) boxCustomInst.classList.add('hidden');
         await loadUserData();
       }
     };
@@ -729,7 +748,7 @@ function setupModals() {
         },
         body: {
           "monto": 25.0,
-          "comercio": "Plaza Vea",
+          "comercio": "Supermercado",
           "tipo": "gasto",
           "metodo_pago": "apple_pay",
           "user_id": state.user?.id || ""
