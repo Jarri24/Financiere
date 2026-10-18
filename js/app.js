@@ -1083,6 +1083,8 @@ function setupModals() {
     };
   }
 }
+}
+
 
 window.openModalAporte = (metaId, metaNombre) => {
   const modal = document.getElementById('modal-aporte-meta');

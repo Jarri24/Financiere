@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiere-v6-contrast-fix';
+const CACHE_NAME = 'financiere-v7-auth-fixed';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
