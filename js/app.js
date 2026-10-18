@@ -222,9 +222,9 @@ function renderCuentas() {
 
   if (state.cuentas.length === 0) {
     container.innerHTML = `
-      <div class="text-center py-6 px-4 rounded-2xl bg-[#071711] border border-dashed border-[#1F6F54]/60 space-y-2">
-        <p class="text-xs text-[#D7E7DD]">Aún no has registrado ninguna cuenta bancaria o tarjeta.</p>
-        <button onclick="document.getElementById('modal-cuenta').classList.remove('hidden')" class="px-3.5 py-1.5 rounded-xl bg-[#1F6F54]/40 text-[#5FB88A] border border-[#5FB88A]/30 text-xs font-bold hover:bg-emerald-500/20">
+      <div class="text-center py-6 px-4 rounded-2xl bg-[#F2F5F8] border border-dashed border-[#C9D6E5] space-y-2">
+        <p class="text-xs text-[#2F5D8C]">Aún no has registrado ninguna cuenta bancaria o tarjeta.</p>
+        <button onclick="document.getElementById('modal-cuenta').classList.remove('hidden')" class="px-3.5 py-1.5 rounded-xl bg-white text-[#123A63] border border-[#C9D6E5] font-bold text-xs font-bold hover:bg-emerald-500/20">
           + Agregar mi primera cuenta
         </button>
       </div>
@@ -238,18 +238,18 @@ function renderCuentas() {
     const formatted = isUSD ? formatUSD(c.saldo_actual) : formatPEN(c.saldo_actual);
 
     return `
-      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-[#0E3B2E] border border-[#1F6F54]/50 hover:border-slate-700 transition-all">
+      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] hover:border-[#2F5D8C] hover:border-slate-700 transition-all">
         <div class="flex items-center space-x-3">
           <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 font-bold text-xs">
             ${c.institucion.slice(0, 3)}
           </div>
           <div>
-            <h4 class="text-xs font-bold text-white">${c.nombre}</h4>
-            <span class="text-[10px] px-2 py-0.5 rounded-md bg-[#071711] text-[#D7E7DD] uppercase tracking-wider font-semibold">${c.tipo.replace('_', ' ')}</span>
+            <h4 class="text-xs font-bold text-[#0B1F3B]">${c.nombre}</h4>
+            <span class="text-[10px] px-2 py-0.5 rounded-md bg-[#071711] text-[#2F5D8C] uppercase tracking-wider font-semibold">${c.tipo.replace('_', ' ')}</span>
           </div>
         </div>
         <div class="text-right">
-          <span class="text-xs font-black ${isNegative ? 'text-rose-400' : 'text-[#F6FBF7]'}">${formatted}</span>
+          <span class="text-xs font-black ${isNegative ? 'text-rose-400' : 'text-[#0B1F3B]'}">${formatted}</span>
           ${isUSD ? `<span class="block text-[10px] text-[#A3C4B2]">~ ${formatPEN(Number(c.saldo_actual) * state.tc)}</span>` : ''}
         </div>
       </div>
@@ -266,9 +266,9 @@ function renderMetas() {
 
   if (state.metas.length === 0) {
     container.innerHTML = `
-      <div class="text-center py-6 px-4 rounded-2xl bg-[#071711] border border-dashed border-[#1F6F54]/60 space-y-2">
-        <p class="text-xs text-[#D7E7DD]">Aún no has definido proyectos o metas de ahorro (ej: Fondo de Emergencia, Vacaciones, etc.).</p>
-        <button onclick="document.getElementById('modal-meta').classList.remove('hidden')" class="px-3.5 py-1.5 rounded-xl bg-[#1F6F54]/40 text-[#5FB88A] border border-[#5FB88A]/30 text-xs font-bold hover:bg-indigo-500/20">
+      <div class="text-center py-6 px-4 rounded-2xl bg-[#F2F5F8] border border-dashed border-[#C9D6E5] space-y-2">
+        <p class="text-xs text-[#2F5D8C]">Aún no has definido proyectos o metas de ahorro (ej: Fondo de Emergencia, Vacaciones, etc.).</p>
+        <button onclick="document.getElementById('modal-meta').classList.remove('hidden')" class="px-3.5 py-1.5 rounded-xl bg-white text-[#123A63] border border-[#C9D6E5] font-bold text-xs font-bold hover:bg-indigo-500/20">
           + Crear mi primera meta
         </button>
       </div>
@@ -296,38 +296,38 @@ function renderMetas() {
     }
 
     return `
-      <div class="p-4 rounded-2xl bg-[#0E3B2E] border border-[#1F6F54]/50 space-y-3">
+      <div class="p-4 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] hover:border-[#2F5D8C] space-y-3">
         <div class="flex justify-between items-start">
           <div class="flex items-center space-x-2.5">
             <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-[#5FB88A] flex items-center justify-center font-bold text-sm">
               🎯
             </div>
             <div>
-              <h4 class="text-xs font-bold text-white">${m.nombre}</h4>
-              <p class="text-[10px] text-[#D7E7DD]">${m.notas || 'Sin notas'}</p>
+              <h4 class="text-xs font-bold text-[#0B1F3B]">${m.nombre}</h4>
+              <p class="text-[10px] text-[#2F5D8C]">${m.notas || 'Sin notas'}</p>
             </div>
           </div>
-          <span class="text-xs font-extrabold px-2 py-0.5 rounded-lg bg-[#1F6F54]/40 text-[#5FB88A] border border-[#5FB88A]/30">
+          <span class="text-xs font-extrabold px-2 py-0.5 rounded-lg bg-white text-[#123A63] border border-[#C9D6E5] font-bold">
             ${pct}%
           </span>
         </div>
 
         <div class="space-y-1">
-          <div class="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-800">
-            <div class="bg-gradient-to-r from-[#1F6F54] to-[#5FB88A] h-1.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+          <div class="w-full bg-[#C9D6E5]/40 rounded-full h-2.5 overflow-hidden p-0.5 border border-[#C9D6E5]">
+            <div class="bg-gradient-to-r from-[#123A63] to-[#2F5D8C] h-1.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
           </div>
           <div class="flex justify-between text-[11px] font-bold">
             <span class="text-[#5FB88A]">${formatPEN(act)}</span>
-            <span class="text-[#D7E7DD]">Meta: ${formatPEN(obj)}</span>
+            <span class="text-[#2F5D8C]">Meta: ${formatPEN(obj)}</span>
           </div>
         </div>
 
-        ${consejoFecha ? `<p class="text-[10px] text-[#D7E7DD] bg-indigo-500/5 p-2 rounded-xl border border-indigo-500/10">${consejoFecha}</p>` : ''}
+        ${consejoFecha ? `<p class="text-[10px] text-[#2F5D8C] bg-indigo-500/5 p-2 rounded-xl border border-indigo-500/10">${consejoFecha}</p>` : ''}
 
         <div class="flex items-center justify-between pt-1 border-t border-slate-800/60">
-          <span class="text-[10px] text-[#D7E7DD]">Faltan: <strong class="text-white">${formatPEN(restante)}</strong></span>
+          <span class="text-[10px] text-[#2F5D8C]">Faltan: <strong class="text-white">${formatPEN(restante)}</strong></span>
           <div class="flex items-center gap-1.5">
-            <button onclick="openModalAporte('${m.id}', '${m.nombre}')" class="px-3 py-1 rounded-xl bg-[#1F6F54]/40 text-[#5FB88A] border border-[#5FB88A]/30 hover:bg-emerald-500/20 text-[11px] font-bold active:scale-95 transition-all">
+            <button onclick="openModalAporte('${m.id}', '${m.nombre}')" class="px-3 py-1 rounded-xl bg-white text-[#123A63] border border-[#C9D6E5] font-bold hover:bg-emerald-500/20 text-[11px] font-bold active:scale-95 transition-all">
               + Aportar
             </button>
             <button onclick="deleteMeta('${m.id}')" class="p-1 rounded-xl text-[#A3C4B2] hover:text-rose-400 active:scale-95 transition-all" title="Eliminar meta">
@@ -349,9 +349,9 @@ function renderPrestamos() {
 
   if (state.prestamos.length === 0) {
     container.innerHTML = `
-      <div class="text-center py-6 px-4 rounded-2xl bg-[#071711] border border-dashed border-[#1F6F54]/60 space-y-2">
-        <p class="text-xs text-[#D7E7DD]">No tienes préstamos registrados en tu cartera.</p>
-        <button onclick="document.getElementById('modal-prestamo').classList.remove('hidden')" class="px-3.5 py-1.5 rounded-xl bg-[#1F6F54]/40 text-[#5FB88A] border border-[#5FB88A]/30 text-xs font-bold hover:bg-indigo-500/20">
+      <div class="text-center py-6 px-4 rounded-2xl bg-[#F2F5F8] border border-dashed border-[#C9D6E5] space-y-2">
+        <p class="text-xs text-[#2F5D8C]">No tienes préstamos registrados en tu cartera.</p>
+        <button onclick="document.getElementById('modal-prestamo').classList.remove('hidden')" class="px-3.5 py-1.5 rounded-xl bg-white text-[#123A63] border border-[#C9D6E5] font-bold text-xs font-bold hover:bg-indigo-500/20">
           + Registrar Préstamo
         </button>
       </div>
@@ -374,7 +374,7 @@ function renderPrestamos() {
     }
 
     return `
-      <div class="p-4 rounded-2xl bg-[#0E3B2E] border border-[#1F6F54]/50 space-y-2.5">
+      <div class="p-4 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] hover:border-[#2F5D8C] space-y-2.5">
         <div class="flex justify-between items-start">
           <div>
             <h4 class="text-sm font-bold text-white flex items-center gap-2">
@@ -383,7 +383,7 @@ function renderPrestamos() {
                 ${p.estado}
               </span>
             </h4>
-            <p class="text-[11px] text-[#D7E7DD]">${p.notas || 'Sin notas'}</p>
+            <p class="text-[11px] text-[#2F5D8C]">${p.notas || 'Sin notas'}</p>
           </div>
           <div class="text-right">
             <span class="text-sm font-black text-white">${formatPEN(capital)}</span>
@@ -391,7 +391,7 @@ function renderPrestamos() {
           </div>
         </div>
         <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs">
-          <span class="text-[#D7E7DD]">Rinde: <strong class="text-[#5FB88A] font-bold">${formatPEN(interesMensual)}/mes</strong></span>
+          <span class="text-[#2F5D8C]">Rinde: <strong class="text-[#5FB88A] font-bold">${formatPEN(interesMensual)}/mes</strong></span>
         </div>
       </div>
     `;
@@ -419,14 +419,14 @@ function renderTransacciones() {
     const isApplePay = t.metodo_pago === 'apple_pay';
 
     return `
-      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-[#0E3B2E] border border-[#1F6F54]/50">
+      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] hover:border-[#2F5D8C]">
         <div class="flex items-center space-x-3">
           <div class="w-10 h-10 rounded-xl ${isGasto ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-[#5FB88A]'} flex items-center justify-center font-bold text-xs">
             ${isApplePay ? '<i data-lucide="smartphone" class="w-4 h-4"></i>' : (isGasto ? '<i data-lucide="arrow-down-right" class="w-4 h-4"></i>' : '<i data-lucide="arrow-up-right" class="w-4 h-4"></i>')}
           </div>
           <div>
-            <h4 class="text-xs font-bold text-white">${t.comercio || t.descripcion || catNombre}</h4>
-            <div class="flex items-center gap-1.5 text-[10px] text-[#D7E7DD]">
+            <h4 class="text-xs font-bold text-[#0B1F3B]">${t.comercio || t.descripcion || catNombre}</h4>
+            <div class="flex items-center gap-1.5 text-[10px] text-[#2F5D8C]">
               <span>${catNombre}</span>
               <span>•</span>
               <span class="text-[#A3C4B2]">${t.fecha}</span>
@@ -472,9 +472,9 @@ function setupNavigation() {
 
       document.querySelectorAll('.nav-tab').forEach(t => {
         t.classList.remove('text-[#5FB88A]');
-        t.classList.add('text-[#D7E7DD]');
+        t.classList.add('text-[#2F5D8C]');
       });
-      tab.classList.remove('text-[#D7E7DD]');
+      tab.classList.remove('text-[#2F5D8C]');
       tab.classList.add('text-[#5FB88A]');
 
       if (window.lucide) lucide.createIcons();
@@ -555,13 +555,13 @@ function setupModals() {
     state.tipoTx = tipo;
     
     [tabGasto, tabIngreso, tabTransfer].forEach(t => {
-      if (t) t.className = 'py-2 text-[11px] font-bold rounded-xl text-[#D7E7DD] hover:text-white transition-all';
+      if (t) t.className = 'py-2 text-[11px] font-bold rounded-xl text-[#2F5D8C] hover:text-white transition-all';
     });
 
     const inputComercio = document.getElementById('input-comercio');
 
     if (tipo === 'gasto') {
-      tabGasto.className = 'py-2 text-[11px] font-bold rounded-xl bg-rose-500 text-white transition-all';
+      tabGasto.className = 'py-2 text-[11px] font-bold rounded-xl bg-rose-600 text-white font-bold transition-all';
       if (boxCuentaDest) boxCuentaDest.classList.add('hidden');
       if (boxCat) boxCat.classList.remove('hidden');
       if (labelComercio) labelComercio.innerText = 'Comercio / Detalle';
@@ -569,7 +569,7 @@ function setupModals() {
       if (labelCtaOrigen) labelCtaOrigen.innerText = 'Cuenta / Tarjeta (De donde sale)';
       if (btnSubmitTx) btnSubmitTx.innerText = 'Guardar Gasto';
     } else if (tipo === 'ingreso') {
-      tabIngreso.className = 'py-2 text-[11px] font-bold rounded-xl bg-[#5FB88A] text-[#0E3B2E] font-black transition-all';
+      tabIngreso.className = 'py-2 text-[11px] font-bold rounded-xl bg-[#123A63] text-white font-bold transition-all';
       if (boxCuentaDest) boxCuentaDest.classList.add('hidden');
       if (boxCat) boxCat.classList.remove('hidden');
       if (labelComercio) labelComercio.innerText = 'Origen / Concepto';
@@ -577,7 +577,7 @@ function setupModals() {
       if (labelCtaOrigen) labelCtaOrigen.innerText = 'Cuenta Destino (A donde ingresa)';
       if (btnSubmitTx) btnSubmitTx.innerText = 'Guardar Ingreso';
     } else if (tipo === 'transferencia') {
-      tabTransfer.className = 'py-2 text-[11px] font-bold rounded-xl bg-[#1F6F54] text-[#F6FBF7] font-bold border border-[#5FB88A]/40 transition-all';
+      tabTransfer.className = 'py-2 text-[11px] font-bold rounded-xl bg-[#1F6F54] text-[#0B1F3B] font-bold border border-[#5FB88A]/40 transition-all';
       if (boxCuentaDest) boxCuentaDest.classList.remove('hidden');
       if (boxCat) boxCat.classList.add('hidden');
       if (labelComercio) labelComercio.innerText = 'Detalle de la Inversión / Movimiento';

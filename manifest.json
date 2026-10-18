@@ -4,8 +4,8 @@
   "description": "Control financiero personal, patrimonio y metas de ahorro",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#071711",
-  "theme_color": "#0E3B2E",
+  "background_color": "#F2F5F8",
+  "theme_color": "#0B1F3B",
   "orientation": "portrait",
   "icons": [
     {
