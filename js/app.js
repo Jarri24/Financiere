@@ -10,6 +10,7 @@ let state = {
   categorias: [],
   prestamos: [],
   transacciones: [],
+  metas: [],
   tipoTx: 'gasto',
   tc: 3.75
 };
@@ -118,20 +119,23 @@ function setupAuthEvents() {
 async function loadUserData() {
   if (!state.user) return;
 
-  const [ctasRes, catsRes, loansRes, txRes] = await Promise.all([
+  const [ctasRes, catsRes, loansRes, txRes, metasRes] = await Promise.all([
     db.from('cuentas').select('*').order('saldo_actual', { ascending: false }),
     db.from('categorias').select('*').order('nombre'),
     db.from('prestamos').select('*').order('created_at', { ascending: false }),
-    db.from('transacciones').select('*, cuentas(nombre), categorias(nombre)').order('fecha', { ascending: false }).limit(25)
+    db.from('transacciones').select('*, cuentas(nombre), categorias(nombre)').order('fecha', { ascending: false }).limit(25),
+    db.from('metas_ahorro').select('*').order('created_at', { ascending: false })
   ]);
 
   if (ctasRes.data) state.cuentas = ctasRes.data;
   if (catsRes.data) state.categorias = catsRes.data;
   if (loansRes.data) state.prestamos = loansRes.data;
   if (txRes.data) state.transacciones = txRes.data;
+  if (metasRes.data) state.metas = metasRes.data;
 
   renderDashboard();
   renderCuentas();
+  renderMetas();
   renderPrestamos();
   renderTransacciones();
   populateDropdowns();
@@ -205,6 +209,90 @@ function renderCuentas() {
     `;
   }).join('');
 }
+
+// Render Metas de Ahorro
+function renderMetas() {
+  const container = document.getElementById('list-metas');
+  const countEl = document.getElementById('count-metas');
+  if (countEl) countEl.innerText = `${state.metas.length} ${state.metas.length === 1 ? 'meta' : 'metas'}`;
+  if (!container) return;
+
+  if (state.metas.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-6 px-4 rounded-2xl bg-slate-950/40 border border-dashed border-slate-800 space-y-2">
+        <p class="text-xs text-slate-400">Aún no has definido proyectos o metas de ahorro (ej: Terreno Amazonas, Casa, etc.).</p>
+        <button onclick="document.getElementById('modal-meta').classList.remove('hidden')" class="px-3.5 py-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs font-bold hover:bg-indigo-500/20">
+          + Crear mi primera meta
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = state.metas.map(m => {
+    const obj = Number(m.monto_objetivo || 1);
+    const act = Number(m.monto_actual || 0);
+    const pct = Math.min(100, Math.round((act / obj) * 100));
+    const restante = Math.max(0, obj - act);
+
+    let consejoFecha = '';
+    if (m.fecha_limite) {
+      const hoy = new Date();
+      const limite = new Date(m.fecha_limite + 'T23:59:59');
+      const diffMeses = Math.max(1, (limite.getFullYear() - hoy.getFullYear()) * 12 + (limite.getMonth() - hoy.getMonth()));
+      if (restante > 0) {
+        const ahorroMensual = (restante / diffMeses);
+        consejoFecha = `💡 Ahorra <strong>${formatPEN(ahorroMensual)}/mes</strong> durante ${diffMeses} ${diffMeses === 1 ? 'mes' : 'meses'}`;
+      } else {
+        consejoFecha = `🎉 ¡Meta cumplida con éxito!`;
+      }
+    }
+
+    return `
+      <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+        <div class="flex justify-between items-start">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-sm">
+              🎯
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-white">${m.nombre}</h4>
+              <p class="text-[10px] text-slate-400">${m.notas || 'Sin notas'}</p>
+            </div>
+          </div>
+          <span class="text-xs font-extrabold px-2 py-0.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            ${pct}%
+          </span>
+        </div>
+
+        <div class="space-y-1">
+          <div class="w-full bg-slate-950 rounded-full h-2.5 overflow-hidden p-0.5 border border-slate-800">
+            <div class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-1.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+          </div>
+          <div class="flex justify-between text-[11px] font-bold">
+            <span class="text-emerald-400">${formatPEN(act)}</span>
+            <span class="text-slate-400">Meta: ${formatPEN(obj)}</span>
+          </div>
+        </div>
+
+        ${consejoFecha ? `<p class="text-[10px] text-indigo-300 bg-indigo-500/5 p-2 rounded-xl border border-indigo-500/10">${consejoFecha}</p>` : ''}
+
+        <div class="flex items-center justify-between pt-1 border-t border-slate-800/60">
+          <span class="text-[10px] text-slate-400">Faltan: <strong class="text-white">${formatPEN(restante)}</strong></span>
+          <div class="flex items-center gap-1.5">
+            <button onclick="openModalAporte('${m.id}', '${m.nombre}')" class="px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 text-[11px] font-bold active:scale-95 transition-all">
+              + Aportar
+            </button>
+            <button onclick="deleteMeta('${m.id}')" class="p-1 rounded-xl text-slate-500 hover:text-rose-400 active:scale-95 transition-all" title="Eliminar meta">
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
 
 // Render Prestamos
 function renderPrestamos() {
@@ -535,6 +623,98 @@ function setupModals() {
       }
     };
   }
+  // Metas Modals Setup
+  const modalMeta = document.getElementById('modal-meta');
+  const modalAporte = document.getElementById('modal-aporte-meta');
+  const btnOpenMeta = document.getElementById('btn-open-modal-meta');
+
+  if (btnOpenMeta) btnOpenMeta.onclick = () => modalMeta.classList.remove('hidden');
+  document.getElementById('btn-close-modal-meta').onclick = () => modalMeta.classList.add('hidden');
+  document.getElementById('btn-close-modal-aporte').onclick = () => modalAporte.classList.add('hidden');
+
+  const formMeta = document.getElementById('form-meta');
+  if (formMeta) {
+    formMeta.onsubmit = async (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById('meta-nombre').value.trim();
+      const objetivo = parseFloat(document.getElementById('meta-monto-objetivo').value);
+      const actual = parseFloat(document.getElementById('meta-monto-actual').value || 0);
+      const fecha = document.getElementById('meta-fecha-limite').value || null;
+      const notas = document.getElementById('meta-notas').value.trim();
+      const btn = document.getElementById('btn-submit-meta');
+
+      btn.disabled = true;
+      const newMeta = {
+        nombre,
+        monto_objetivo: objetivo,
+        monto_actual: actual,
+        fecha_limite: fecha,
+        notas,
+        user_id: state.user.id
+      };
+
+      const { error } = await db.from('metas_ahorro').insert([newMeta]);
+      btn.disabled = false;
+
+      if (error) {
+        alert('Error: ' + error.message);
+      } else {
+        modalMeta.classList.add('hidden');
+        formMeta.reset();
+        await loadUserData();
+      }
+    };
+  }
+
+  const formAporte = document.getElementById('form-aporte-meta');
+  if (formAporte) {
+    formAporte.onsubmit = async (e) => {
+      e.preventDefault();
+      const metaId = document.getElementById('aporte-meta-id').value;
+      const montoAporte = parseFloat(document.getElementById('aporte-monto').value);
+      const cuentaId = document.getElementById('aporte-cuenta-origen').value;
+      const btn = document.getElementById('btn-submit-aporte');
+
+      btn.disabled = true;
+      const metaActual = state.metas.find(m => m.id === metaId);
+      if (!metaActual) return;
+
+      const nuevoMonto = Number(metaActual.monto_actual || 0) + montoAporte;
+
+      const { error: errMeta } = await db
+        .from('metas_ahorro')
+        .update({ monto_actual: nuevoMonto, updated_at: new Date().toISOString() })
+        .eq('id', metaId);
+
+      if (!errMeta && cuentaId) {
+        const cta = state.cuentas.find(c => c.id === cuentaId);
+        if (cta) {
+          const nuevoSaldo = Number(cta.saldo_actual) - montoAporte;
+          await db.from('cuentas').update({ saldo_actual: nuevoSaldo }).eq('id', cuentaId);
+          await db.from('transacciones').insert([{
+            fecha: new Date().toISOString().split('T')[0],
+            tipo: 'gasto',
+            monto: montoAporte,
+            moneda: cta.moneda,
+            cuenta_origen_id: cuentaId,
+            comercio: `Aporte a meta: ${metaActual.nombre}`,
+            user_id: state.user.id
+          }]);
+        }
+      }
+
+      btn.disabled = false;
+
+      if (errMeta) {
+        alert('Error: ' + errMeta.message);
+      } else {
+        modalAporte.classList.add('hidden');
+        formAporte.reset();
+        await loadUserData();
+      }
+    };
+  }
+
 
   const btnCopy = document.getElementById('btn-copy-shortcut-json');
   if (btnCopy) {
@@ -561,3 +741,28 @@ function setupModals() {
     };
   }
 }
+
+window.openModalAporte = (metaId, metaNombre) => {
+  const modal = document.getElementById('modal-aporte-meta');
+  document.getElementById('aporte-meta-id').value = metaId;
+  document.getElementById('aporte-meta-nombre-display').innerText = metaNombre;
+  document.getElementById('aporte-monto').value = '';
+
+  const selCta = document.getElementById('aporte-cuenta-origen');
+  if (selCta) {
+    selCta.innerHTML = '<option value="">(No descontar de ninguna cuenta)</option>' +
+      state.cuentas.map(c => `<option value="${c.id}">${c.nombre} (${c.moneda} - Saldo: ${c.saldo_actual})</option>`).join('');
+  }
+
+  modal.classList.remove('hidden');
+  document.getElementById('aporte-monto').focus();
+};
+
+window.deleteMeta = async (metaId) => {
+  if (confirm('¿Estás seguro de eliminar esta meta o proyecto?')) {
+    const { error } = await db.from('metas_ahorro').delete().eq('id', metaId);
+    if (error) alert('Error: ' + error.message);
+    else await loadUserData();
+  }
+};
+

@@ -177,6 +177,21 @@
           </div>
           <div class="space-y-2.5" id="list-cuentas"></div>
         </div>
+
+        <!-- Metas & Proyectos -->
+        <div class="rounded-3xl bg-finCard p-5 border border-finBorder shadow-xl space-y-3">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-sm font-bold text-white">Metas & Proyectos</h2>
+              <span class="text-[11px] text-slate-400" id="count-metas">0 metas</span>
+            </div>
+            <button id="btn-open-modal-meta" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 flex items-center gap-1 transition-all active:scale-95">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Nueva Meta
+            </button>
+          </div>
+          <div class="space-y-3" id="list-metas"></div>
+        </div>
+
       </section>
 
       <!-- TAB 2: PRESTAMOS -->
@@ -434,6 +449,88 @@
 
         <button type="submit" id="btn-submit-prestamo" class="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm transition-all active:scale-95 shadow-lg shadow-indigo-600/25">
           Guardar Préstamo
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVA META DE AHORRO -->
+  <div id="modal-meta" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="text-base font-bold text-white">Nueva Meta o Proyecto</h3>
+        <button id="btn-close-modal-meta" class="p-1.5 rounded-xl text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-meta" class="space-y-3.5">
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Nombre del Proyecto o Meta</label>
+          <input type="text" id="meta-nombre" required placeholder="Ej: Terreno Amazonas, Reconstrucción Casa, Viaje" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 block mb-1">Monto Objetivo (S/)</label>
+            <input type="number" step="0.01" id="meta-monto-objetivo" required placeholder="20000.00" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 block mb-1">Ahorrado Inicial (S/)</label>
+            <input type="number" step="0.01" id="meta-monto-actual" placeholder="0.00" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Fecha Meta Deseada (Opcional)</label>
+          <input type="date" id="meta-fecha-limite" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Notas / Estrategia</label>
+          <input type="text" id="meta-notas" placeholder="Ej: Separar 20% del sueldo mensual" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <button type="submit" id="btn-submit-meta" class="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm transition-all active:scale-95 shadow-lg shadow-indigo-600/25">
+          Crear Meta
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: APORTAR A META -->
+  <div id="modal-aporte-meta" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-base font-bold text-white">Aportar a Meta</h3>
+          <p class="text-[11px] text-slate-400" id="aporte-meta-nombre-display">Nombre de Meta</p>
+        </div>
+        <button id="btn-close-modal-aporte" class="p-1.5 rounded-xl text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-aporte-meta" class="space-y-3.5">
+        <input type="hidden" id="aporte-meta-id">
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Monto a Aportar (S/)</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400">S/</span>
+            <input type="number" step="0.01" id="aporte-monto" required placeholder="0.00" class="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-2xl font-black text-white focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Descontar de Cuenta (Opcional)</label>
+          <select id="aporte-cuenta-origen" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
+            <option value="">(No descontar de ninguna cuenta)</option>
+          </select>
+        </div>
+
+        <button type="submit" id="btn-submit-aporte" class="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm transition-all active:scale-95 shadow-lg shadow-emerald-500/20">
+          Confirmar Aporte
         </button>
       </form>
     </div>
