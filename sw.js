@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiere-v1';
+const CACHE_NAME = 'financiere-v5-navy';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -9,10 +9,10 @@ const ASSETS_TO_CACHE = [
 ];
 
 self.addEventListener('install', (e) => {
+  self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
@@ -26,11 +26,21 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
+// Network-First Strategy: Siempre busca la última versión de internet, si no hay red usa cache
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET' || e.request.url.includes('supabase.co')) {
     return;
   }
   e.respondWith(
-    caches.match(e.request).then((res) => res || fetch(e.request))
+    fetch(e.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, responseClone));
+        }
+        return networkResponse;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
+

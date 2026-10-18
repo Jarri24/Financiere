@@ -89,10 +89,13 @@
       </div>
     </div>
     <div class="flex items-center space-x-2" id="header-auth-actions">
-      <button id="btn-refresh" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-[#F6FBF7] transition-all active:scale-95 hidden" title="Actualizar">
+      <button id="btn-refresh" class="p-2 rounded-xl bg-[#123A63] hover:bg-[#2F5D8C] text-[#C9D6E5] hover:text-white transition-all active:scale-95 border border-[#2F5D8C]/40 hidden" title="Actualizar">
         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
       </button>
-      <button id="btn-logout" class="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/20 text-[#D7E7DD] hover:text-rose-400 transition-all active:scale-95 hidden" title="Cerrar sesión">
+      <button id="btn-open-settings" class="p-2 rounded-xl bg-[#123A63] hover:bg-[#2F5D8C] text-[#C9D6E5] hover:text-white transition-all active:scale-95 border border-[#2F5D8C]/40 hidden" title="Configuraciones">
+        <i data-lucide="settings" class="w-4 h-4"></i>
+      </button>
+      <button id="btn-logout" class="p-2 rounded-xl bg-[#123A63] hover:bg-rose-900/30 text-[#C9D6E5] hover:text-rose-300 transition-all active:scale-95 border border-[#2F5D8C]/40 hidden" title="Cerrar sesión">
         <i data-lucide="log-out" class="w-4 h-4"></i>
       </button>
     </div>
@@ -665,6 +668,83 @@
 
         <button type="submit" class="w-full py-3.5 rounded-2xl bg-[#0B1F3B] hover:bg-[#123A63] text-white font-bold text-sm transition-all active:scale-95 shadow-lg shadow-[#5FB88A]/20">
           Actualizar Patrimonio
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PANEL DE CONFIGURACIONES -->
+  <div id="modal-settings" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-white border border-[#C9D6E5] rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="text-base font-bold text-[#0B1F3B] flex items-center gap-2">
+            <i data-lucide="settings" class="w-5 h-5 text-[#123A63]"></i>
+            Configuración & Preferencias
+          </h3>
+          <p class="text-[11px] text-[#2F5D8C]">Personaliza tu perfil, reportes y tipo de cambio.</p>
+        </div>
+        <button id="btn-close-modal-settings" class="p-1.5 rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-settings" class="space-y-4">
+        <!-- 1. Perfil y Nombre -->
+        <div class="p-3.5 bg-[#F2F5F8] rounded-2xl border border-[#C9D6E5] space-y-2">
+          <label class="text-[11px] font-bold text-[#0B1F3B] uppercase tracking-wider block">1. Tu Nombre / Saludo</label>
+          <input type="text" id="config-nombre" required placeholder="Ej: Jarinson, Mariana" class="w-full px-4 py-2.5 bg-white border border-[#C9D6E5] rounded-xl text-sm text-[#0B1F3B] focus:outline-none focus:border-[#2F5D8C]">
+          <p class="text-[10px] text-[#2F5D8C]">Nombre con el que Financiere te saludará.</p>
+        </div>
+
+        <!-- 2. Tipo de Cambio Editable -->
+        <div class="p-3.5 bg-[#F2F5F8] rounded-2xl border border-[#C9D6E5] space-y-2">
+          <div class="flex justify-between items-center">
+            <label class="text-[11px] font-bold text-[#0B1F3B] uppercase tracking-wider">2. Tipo de Cambio (USD ➔ PEN)</label>
+            <span class="text-[10px] px-2 py-0.5 rounded-lg bg-white border border-[#C9D6E5] text-[#123A63] font-bold" id="badge-tc-display">1 USD = S/ 3.75</span>
+          </div>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[#2F5D8C]">S/</span>
+            <input type="number" step="0.0001" id="config-tc" required placeholder="3.7500" class="w-full pl-10 pr-4 py-2.5 bg-white border border-[#C9D6E5] rounded-xl text-base font-bold text-[#0B1F3B] focus:outline-none focus:border-[#2F5D8C]">
+          </div>
+          <p class="text-[10px] text-[#2F5D8C]">Convierte en tiempo real tus cuentas y brokers en dólares a Soles.</p>
+        </div>
+
+        <!-- 3. Canales de Reporte (Email y Telegram) -->
+        <div class="p-3.5 bg-[#F2F5F8] rounded-2xl border border-[#C9D6E5] space-y-3">
+          <label class="text-[11px] font-bold text-[#0B1F3B] uppercase tracking-wider block">3. Reportes & Alertas Programadas</label>
+          
+          <div>
+            <label class="text-[10px] font-semibold text-[#123A63] block mb-1">Correo para Reportes Financieros</label>
+            <input type="email" id="config-email-reportes" placeholder="tu@correo.com" class="w-full px-3 py-2 bg-white border border-[#C9D6E5] rounded-xl text-xs text-[#0B1F3B] focus:outline-none focus:border-[#2F5D8C]">
+            <label class="flex items-center gap-2 mt-1.5 text-[11px] text-[#0B1F3B] cursor-pointer">
+              <input type="checkbox" id="config-check-email" class="rounded text-[#123A63] focus:ring-0">
+              <span>Recibir resumen financiero matutino por correo</span>
+            </label>
+          </div>
+
+          <div class="pt-2 border-t border-[#C9D6E5]/70">
+            <label class="text-[10px] font-semibold text-[#123A63] block mb-1">Celular / WhatsApp (con código de país)</label>
+            <input type="tel" id="config-telefono" placeholder="Ej: +51 967 145 867" class="w-full px-3 py-2 bg-white border border-[#C9D6E5] rounded-xl text-xs text-[#0B1F3B] focus:outline-none focus:border-[#2F5D8C]">
+          </div>
+
+          <div class="pt-2 border-t border-[#C9D6E5]/70">
+            <label class="text-[10px] font-semibold text-[#123A63] block mb-1">Usuario o ID de Telegram</label>
+            <input type="text" id="config-telegram" placeholder="Ej: @usuario o ID numérico" class="w-full px-3 py-2 bg-white border border-[#C9D6E5] rounded-xl text-xs text-[#0B1F3B] focus:outline-none focus:border-[#2F5D8C]">
+            <label class="flex items-center gap-2 mt-1.5 text-[11px] text-[#0B1F3B] cursor-pointer">
+              <input type="checkbox" id="config-check-telegram" class="rounded text-[#123A63] focus:ring-0">
+              <span>Recibir alertas y balance diario vía Telegram</span>
+            </label>
+          </div>
+
+          <div class="pt-2 border-t border-[#C9D6E5]/70 flex items-center justify-between">
+            <span class="text-[10px] font-semibold text-[#123A63]">Hora preferida de envío:</span>
+            <input type="time" id="config-hora-reporte" value="07:30" class="px-2.5 py-1 bg-white border border-[#C9D6E5] rounded-lg text-xs text-[#0B1F3B]">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-save-settings" class="w-full py-3.5 rounded-2xl bg-[#0B1F3B] hover:bg-[#123A63] text-white font-bold text-sm transition-all active:scale-95 shadow-lg shadow-[#0B1F3B]/30">
+          Guardar Configuración
         </button>
       </form>
     </div>

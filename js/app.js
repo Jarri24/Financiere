@@ -11,6 +11,16 @@ let state = {
   prestamos: [],
   transacciones: [],
   metas: [],
+  config: {
+    nombre: 'Jarinson',
+    email_reportes: '',
+    telefono: '',
+    telegram_id: '',
+    tipo_cambio: 3.75,
+    recibir_reporte_email: false,
+    recibir_reporte_telegram: false,
+    hora_reporte: '07:30'
+  },
   tipoTx: 'gasto',
   tc: 3.75
 };
@@ -53,6 +63,8 @@ function showLoginView() {
   document.getElementById('view-login').classList.remove('hidden');
   document.getElementById('app-content').classList.add('hidden');
   document.getElementById('header-auth-actions').classList.add('hidden');
+  const btnSettings = document.getElementById('btn-open-settings');
+  if (btnSettings) btnSettings.classList.add('hidden');
   document.getElementById('user-display-email').innerText = 'MI BILLETERA PRIVADA';
   document.getElementById('badge-auth-status').className = 'w-2 h-2 rounded-full bg-slate-500';
   if (window.lucide) lucide.createIcons();
@@ -64,6 +76,8 @@ async function setAuthenticatedUser(user) {
   document.getElementById('app-content').classList.remove('hidden');
   document.getElementById('header-auth-actions').classList.remove('hidden');
   document.getElementById('btn-refresh').classList.remove('hidden');
+  const btnSettings = document.getElementById('btn-open-settings');
+  if (btnSettings) btnSettings.classList.remove('hidden');
   document.getElementById('btn-logout').classList.remove('hidden');
   document.getElementById('user-display-email').innerText = user.email.toUpperCase();
   document.getElementById('badge-auth-status').className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
@@ -152,12 +166,13 @@ function setupAuthEvents() {
 async function loadUserData() {
   if (!state.user) return;
 
-  const [ctasRes, catsRes, loansRes, txRes, metasRes] = await Promise.all([
+  const [ctasRes, catsRes, loansRes, txRes, metasRes, configRes] = await Promise.all([
     db.from('cuentas').select('*').order('saldo_actual', { ascending: false }),
     db.from('categorias').select('*').order('nombre'),
     db.from('prestamos').select('*').order('created_at', { ascending: false }),
     db.from('transacciones').select('*, cuentas(nombre), categorias(nombre)').order('fecha', { ascending: false }).limit(25),
-    db.from('metas_ahorro').select('*').order('created_at', { ascending: false })
+    db.from('metas_ahorro').select('*').order('created_at', { ascending: false }),
+    db.from('configuracion_usuario').select('*').limit(1)
   ]);
 
   if (ctasRes.data) state.cuentas = ctasRes.data;
@@ -165,6 +180,28 @@ async function loadUserData() {
   if (loansRes.data) state.prestamos = loansRes.data;
   if (txRes.data) state.transacciones = txRes.data;
   if (metasRes.data) state.metas = metasRes.data;
+
+  if (configRes.data && configRes.data.length > 0) {
+    state.config = { ...state.config, ...configRes.data[0] };
+    if (state.config.tipo_cambio) state.tc = parseFloat(state.config.tipo_cambio);
+    if (state.config.nombre) {
+      localStorage.setItem('financiere_name_' + state.user.id, state.config.nombre);
+      const elGreeting = document.getElementById('user-greeting-name');
+      if (elGreeting) elGreeting.innerText = `¡Hola, ${state.config.nombre}!`;
+    }
+  } else {
+    const localTc = localStorage.getItem('financiere_tc_' + state.user.id);
+    if (localTc) state.tc = parseFloat(localTc);
+    const localName = localStorage.getItem('financiere_name_' + state.user.id);
+    if (localName) {
+      state.config.nombre = localName;
+      const elGreeting = document.getElementById('user-greeting-name');
+      if (elGreeting) elGreeting.innerText = `¡Hola, ${localName}!`;
+    }
+  }
+
+  const badgeTc = document.getElementById('badge-tc-display');
+  if (badgeTc) badgeTc.innerText = `1 USD = S/ ${state.tc.toFixed(4)}`;
 
   renderDashboard();
   renderCuentas();
@@ -967,6 +1004,83 @@ function setupModals() {
     };
   }
 
+  // Handlers para Panel de Configuraciones
+  const btnOpenSettings = document.getElementById('btn-open-settings');
+  const modalSettings = document.getElementById('modal-settings');
+  const btnCloseSettings = document.getElementById('btn-close-modal-settings');
+  const formSettings = document.getElementById('form-settings');
+
+  if (btnOpenSettings) {
+    btnOpenSettings.onclick = () => {
+      document.getElementById('config-nombre').value = state.config.nombre || localStorage.getItem('financiere_name_' + state.user.id) || 'Jarinson';
+      document.getElementById('config-tc').value = state.tc.toFixed(4);
+      document.getElementById('config-email-reportes').value = state.config.email_reportes || state.user.email || '';
+      document.getElementById('config-check-email').checked = !!state.config.recibir_reporte_email;
+      document.getElementById('config-telefono').value = state.config.telefono || '';
+      document.getElementById('config-telegram').value = state.config.telegram_id || '';
+      document.getElementById('config-check-telegram').checked = !!state.config.recibir_reporte_telegram;
+      document.getElementById('config-hora-reporte').value = state.config.hora_reporte ? state.config.hora_reporte.slice(0, 5) : '07:30';
+      const badge = document.getElementById('badge-tc-display');
+      if (badge) badge.innerText = `1 USD = S/ ${state.tc.toFixed(4)}`;
+      modalSettings.classList.remove('hidden');
+    };
+  }
+
+  if (btnCloseSettings) {
+    btnCloseSettings.onclick = () => modalSettings.classList.add('hidden');
+  }
+
+  if (formSettings) {
+    formSettings.onsubmit = async (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById('config-nombre').value.trim();
+      const tc = parseFloat(document.getElementById('config-tc').value || 3.75);
+      const emailReportes = document.getElementById('config-email-reportes').value.trim();
+      const checkEmail = document.getElementById('config-check-email').checked;
+      const telefono = document.getElementById('config-telefono').value.trim();
+      const telegram = document.getElementById('config-telegram').value.trim();
+      const checkTelegram = document.getElementById('config-check-telegram').checked;
+      const horaReporte = document.getElementById('config-hora-reporte').value || '07:30:00';
+      const btnSave = document.getElementById('btn-save-settings');
+
+      btnSave.disabled = true;
+      btnSave.innerText = 'Guardando...';
+
+      state.tc = tc;
+      localStorage.setItem('financiere_tc_' + state.user.id, tc.toString());
+      localStorage.setItem('financiere_name_' + state.user.id, nombre);
+
+      state.config = {
+        user_id: state.user.id,
+        nombre,
+        tipo_cambio: tc,
+        email_reportes: emailReportes,
+        recibir_reporte_email: checkEmail,
+        telefono,
+        telegram_id: telegram,
+        recibir_reporte_telegram: checkTelegram,
+        hora_reporte: horaReporte
+      };
+
+      try {
+        await db.from('configuracion_usuario').upsert(state.config, { onConflict: 'user_id' });
+      } catch (err) {
+        console.warn('Config upsert warning:', err);
+      }
+
+      btnSave.disabled = false;
+      btnSave.innerText = 'Guardar Configuración';
+      modalSettings.classList.add('hidden');
+
+      const elGreeting = document.getElementById('user-greeting-name');
+      if (elGreeting) elGreeting.innerText = `¡Hola, ${nombre}!`;
+
+      const badge = document.getElementById('badge-tc-display');
+      if (badge) badge.innerText = `1 USD = S/ ${state.tc.toFixed(4)}`;
+
+      renderDashboard();
+      renderCuentas();
+    };
   }
 }
 
