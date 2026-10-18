@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Financiere">
+  <meta name="theme-color" content="#090d16">
+  <title>Financiere - Control Financiero</title>
+
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            finDark: '#090D16',
+            finCard: '#111827',
+            finBorder: '#1F2937',
+            finEmerald: '#10B981',
+            finIndigo: '#6366F1',
+            finRose: '#F43F5E',
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .safe-bottom {
+      padding-bottom: calc(env(safe-area-inset-bottom) + 5.5rem);
+    }
+    .glass-nav {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+<body class="bg-finDark text-slate-100 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 glass-nav border-b border-finBorder px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-bold text-slate-950 shadow-lg shadow-emerald-500/20">
+        <i data-lucide="wallet" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h1 class="text-sm font-bold tracking-tight text-white flex items-center gap-1.5">
+          Financiere
+          <span id="badge-auth-status" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        </h1>
+        <p id="user-display-email" class="text-[10px] text-slate-400 font-medium tracking-wide">MI BILLETERA PRIVADA</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2" id="header-auth-actions">
+      <button id="btn-refresh" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-all active:scale-95 hidden" title="Actualizar">
+        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+      </button>
+      <button id="btn-logout" class="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-all active:scale-95 hidden" title="Cerrar sesión">
+        <i data-lucide="log-out" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- PANTALLA DE LOGIN (Visible cuando no hay sesión) -->
+  <section id="view-login" class="flex-1 max-w-sm mx-auto w-full px-5 flex flex-col justify-center py-12">
+    <div class="text-center space-y-2 mb-8">
+      <div class="w-16 h-16 mx-auto rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center font-black text-slate-950 shadow-2xl shadow-emerald-500/30 text-2xl">
+        F
+      </div>
+      <h2 class="text-2xl font-black text-white tracking-tight">Financiere</h2>
+      <p class="text-xs text-slate-400">Acceso privado por invitación</p>
+    </div>
+
+    <form id="form-login" class="bg-finCard p-6 rounded-3xl border border-finBorder shadow-2xl space-y-4">
+      <div>
+        <label class="text-[11px] font-bold text-slate-300 block mb-1.5 uppercase tracking-wider">Correo Electrónico</label>
+        <input type="email" id="login-email" required placeholder="tu@correo.com" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500 transition-all">
+      </div>
+
+      <div>
+        <label class="text-[11px] font-bold text-slate-300 block mb-1.5 uppercase tracking-wider">Contraseña</label>
+        <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500 transition-all">
+      </div>
+
+      <div id="login-error-msg" class="text-xs text-rose-400 hidden bg-rose-500/10 p-3 rounded-xl border border-rose-500/20"></div>
+
+      <button type="submit" id="btn-submit-login" class="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm transition-all active:scale-95 shadow-lg shadow-emerald-500/25">
+        Ingresar a mi Billetera
+      </button>
+    </form>
+    <p class="text-[11px] text-center text-slate-500 mt-6">
+      Tus datos están protegidos y aislados bajo cifrado PostgreSQL RLS.
+    </p>
+  </section>
+
+  <!-- CONTENEDOR APP PRINCIPAL (Visible solo tras Login) -->
+  <div id="app-content" class="hidden flex-1 flex flex-col">
+    <main class="flex-1 max-w-lg mx-auto w-full px-4 pt-4 safe-bottom">
+      
+      <!-- TAB 1: RESUMEN -->
+      <section id="view-resumen" class="space-y-4 tab-view">
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800/90 to-slate-900 p-5 border border-slate-700/60 shadow-2xl">
+          <div class="absolute -top-12 -right-12 w-36 h-36 bg-emerald-500/10 rounded-full blur-2xl"></div>
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Patrimonio Total</span>
+            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">En vivo</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-4">
+            <span class="text-3xl font-extrabold text-white tracking-tight" id="kpi-patrimonio">S/ 0.00</span>
+            <span class="text-xs text-slate-400" id="kpi-patrimonio-usd">($0.00 USD)</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-700/50">
+            <div class="bg-slate-950/40 rounded-2xl p-2.5 border border-slate-800/80">
+              <p class="text-[10px] text-slate-400 font-medium">Ahorros & Cuentas</p>
+              <p class="text-sm font-bold text-emerald-400 mt-0.5" id="kpi-inversiones">S/ 0.00</p>
+            </div>
+            <div class="bg-slate-950/40 rounded-2xl p-2.5 border border-slate-800/80">
+              <p class="text-[10px] text-slate-400 font-medium">Préstamos Activos</p>
+              <p class="text-sm font-bold text-indigo-400 mt-0.5" id="kpi-prestamos-total">S/ 0.00</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button id="btn-quick-expense" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-rose-500/10 to-rose-600/5 border border-rose-500/20 hover:border-rose-500/40 text-left transition-all active:scale-95">
+            <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold">
+              <i data-lucide="minus-circle" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white">Nuevo Gasto</div>
+              <div class="text-[10px] text-slate-400">Registrar consumo</div>
+            </div>
+          </button>
+
+          <button id="btn-quick-income" class="flex items-center gap-3 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-500/10 to-emerald-600/5 border border-emerald-500/20 hover:border-emerald-500/40 text-left transition-all active:scale-95">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+              <i data-lucide="plus-circle" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-white">Nuevo Ingreso</div>
+              <div class="text-[10px] text-slate-400">Sueldo, cobro o extra</div>
+            </div>
+          </button>
+        </div>
+
+        <div class="rounded-3xl bg-finCard p-5 border border-finBorder shadow-xl">
+          <div class="flex justify-between items-center mb-3">
+            <div>
+              <h2 class="text-sm font-bold text-white">Mis Cuentas & Tarjetas</h2>
+              <span class="text-[11px] text-slate-400" id="count-cuentas">0 cuentas</span>
+            </div>
+            <button id="btn-open-modal-cuenta" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 flex items-center gap-1 transition-all active:scale-95">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Agregar
+            </button>
+          </div>
+          <div class="space-y-2.5" id="list-cuentas"></div>
+        </div>
+      </section>
+
+      <!-- TAB 2: PRESTAMOS -->
+      <section id="view-prestamos" class="space-y-4 tab-view hidden">
+        <div class="rounded-3xl bg-gradient-to-br from-indigo-950/60 via-slate-900 to-slate-900 p-5 border border-indigo-500/30 shadow-xl">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-indigo-300">Cartera de Préstamos</span>
+            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium">Microcréditos</span>
+          </div>
+          <div class="flex items-baseline gap-2 mb-3">
+            <span class="text-3xl font-extrabold text-white" id="loans-total-capital">S/ 0.00</span>
+            <span class="text-xs text-indigo-300">en cartera activa</span>
+          </div>
+          <p class="text-xs text-slate-300">
+            Interés mensual estimado: <strong class="text-emerald-400 font-bold" id="loans-monthly-interest">S/ 0.00/mes</strong>
+          </p>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white">Deudores</h2>
+          <button id="btn-open-modal-prestamo" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 flex items-center gap-1 transition-all active:scale-95">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Nuevo Préstamo
+          </button>
+        </div>
+
+        <div class="space-y-3" id="list-prestamos"></div>
+      </section>
+
+      <!-- TAB 3: MOVIMIENTOS -->
+      <section id="view-movimientos" class="space-y-4 tab-view hidden">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-bold text-white">Historial de Movimientos</h2>
+          <span class="text-xs text-slate-400" id="count-tx">0 registros</span>
+        </div>
+        <div class="space-y-2.5" id="list-transacciones"></div>
+      </section>
+
+      <!-- TAB 4: AUTOMATIZACION IPHONE -->
+      <section id="view-atajos" class="space-y-4 tab-view hidden">
+        <div class="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 p-5 border border-slate-800 shadow-xl space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
+              <i data-lucide="smartphone" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-base font-bold text-white">Atajo de Apple Wallet</h2>
+              <p class="text-xs text-slate-400">Automatiza tus gastos en 1 segundo</p>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-300 leading-relaxed">
+            Vincula tus compras de Apple Pay en tu iPhone o Apple Watch directamente a tu usuario.
+          </p>
+
+          <div class="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 font-mono text-[11px]">
+            <div class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">Tu User ID para el Atajo:</div>
+            <div class="text-emerald-400 break-all select-all font-semibold" id="display-user-id">Inicia sesión para ver tu ID</div>
+          </div>
+
+          <button id="btn-copy-shortcut-json" class="w-full py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-indigo-600/30">
+            <i data-lucide="copy" class="w-4 h-4"></i> Copiar Configuración del Atajo
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 glass-nav border-t border-finBorder">
+      <div class="max-w-lg mx-auto px-4 py-2 flex items-center justify-around">
+        <button class="nav-tab active flex flex-col items-center py-1 text-emerald-400 transition-colors" data-view="resumen">
+          <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium mt-1">Resumen</span>
+        </button>
+
+        <button class="nav-tab flex flex-col items-center py-1 text-slate-400 hover:text-slate-200 transition-colors" data-view="prestamos">
+          <i data-lucide="trending-up" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium mt-1">Préstamos</span>
+        </button>
+
+        <button id="btn-floating-add" class="-mt-5 w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 flex items-center justify-center shadow-lg shadow-emerald-500/30 transition-transform active:scale-90 hover:scale-105">
+          <i data-lucide="plus" class="w-6 h-6 stroke-[2.5]"></i>
+        </button>
+
+        <button class="nav-tab flex flex-col items-center py-1 text-slate-400 hover:text-slate-200 transition-colors" data-view="movimientos">
+          <i data-lucide="receipt" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium mt-1">Movimientos</span>
+        </button>
+
+        <button class="nav-tab flex flex-col items-center py-1 text-slate-400 hover:text-slate-200 transition-colors" data-view="atajos">
+          <i data-lucide="zap" class="w-5 h-5"></i>
+          <span class="text-[10px] font-medium mt-1">Atajos</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- MODAL: REGISTRAR TRANSACCION -->
+  <div id="modal-tx" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center">
+        <h3 class="text-base font-bold text-white">Nuevo Movimiento</h3>
+        <button id="btn-close-modal-tx" class="p-1.5 rounded-xl text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-tx" class="space-y-3.5">
+        <div class="grid grid-cols-2 gap-2 p-1 bg-slate-950 rounded-2xl border border-slate-800">
+          <button type="button" id="tab-tipo-gasto" class="py-2 text-xs font-bold rounded-xl bg-rose-500 text-white transition-all">Gasto</button>
+          <button type="button" id="tab-tipo-ingreso" class="py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all">Ingreso</button>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Monto (S/)</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400">S/</span>
+            <input type="number" step="0.01" id="input-monto" required placeholder="0.00" class="w-full pl-12 pr-4 py-3 bg-slate-950 border border-slate-800 rounded-2xl text-2xl font-black text-white focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Comercio / Descripción</label>
+          <input type="text" id="input-comercio" placeholder="Ej: Menú, Grifo, Plaza Vea" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-[11px] font-semibold text-slate-400">Cuenta / Tarjeta</label>
+            <button type="button" id="btn-quick-add-cta" class="text-[10px] text-emerald-400 font-bold hover:underline">+ Nueva cuenta</button>
+          </div>
+          <select id="select-cuenta" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500"></select>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-[11px] font-semibold text-slate-400">Categoría</label>
+            <button type="button" id="btn-quick-add-cat" class="text-[10px] text-emerald-400 font-bold hover:underline">+ Nueva categoría</button>
+          </div>
+          <select id="select-categoria" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500"></select>
+          
+          <div id="inline-new-cat-box" class="hidden mt-2 p-2 rounded-xl bg-slate-950 border border-emerald-500/30 flex gap-2">
+            <input type="text" id="input-new-cat-name" placeholder="Nombre de categoría..." class="flex-1 px-3 py-1 bg-slate-900 border border-slate-700 rounded-lg text-xs text-white">
+            <button type="button" id="btn-save-inline-cat" class="px-3 py-1 bg-emerald-500 text-slate-950 rounded-lg text-xs font-bold">Crear</button>
+            <button type="button" id="btn-cancel-inline-cat" class="px-2 py-1 text-slate-400 text-xs">✕</button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit-tx" class="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm transition-all active:scale-95 shadow-lg shadow-emerald-500/20">
+          Guardar Movimiento
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVA CUENTA / TARJETA -->
+  <div id="modal-cuenta" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="text-base font-bold text-white">Nueva Cuenta o Tarjeta</h3>
+        <button id="btn-close-modal-cuenta" class="p-1.5 rounded-xl text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-cuenta" class="space-y-3.5">
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Nombre de la Cuenta</label>
+          <input type="text" id="cta-nombre" required placeholder="Ej: BCP Sueldo, BBVA Tarjeta, Billetera Yape" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 block mb-1">Institución / Banco</label>
+            <select id="cta-institucion" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
+              <option value="BCP">BCP</option>
+              <option value="BBVA">BBVA</option>
+              <option value="Interbank">Interbank</option>
+              <option value="Scotiabank">Scotiabank</option>
+              <option value="Yape">Yape</option>
+              <option value="Plin">Plin</option>
+              <option value="SIP">SIP</option>
+              <option value="eToro">eToro</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 block mb-1">Tipo</label>
+            <select id="cta-tipo" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
+              <option value="ahorros">Cuenta Ahorros</option>
+              <option value="tarjeta_credito">Tarjeta Crédito</option>
+              <option value="corriente">Cuenta Corriente</option>
+              <option value="dpf">Plazo Fijo (DPF)</option>
+              <option value="inversion">Inversiones</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 block mb-1">Moneda</label>
+            <select id="cta-moneda" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
+              <option value="PEN">Soles (PEN)</option>
+              <option value="USD">Dólares (USD)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 block mb-1">Saldo Actual</label>
+            <input type="number" step="0.01" id="cta-saldo" required placeholder="0.00" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit-cuenta" class="w-full py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm transition-all active:scale-95 shadow-lg shadow-emerald-500/20">
+          Guardar Cuenta
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO PRESTAMO -->
+  <div id="modal-prestamo" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="text-base font-bold text-white">Nuevo Préstamo</h3>
+        <button id="btn-close-modal-prestamo" class="p-1.5 rounded-xl text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-prestamo" class="space-y-3.5">
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Nombre del Deudor / Persona</label>
+          <input type="text" id="loan-deudor" required placeholder="Ej: Carlos M., Luz, Primo" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 block mb-1">Monto Prestado (S/)</label>
+            <input type="number" step="0.01" id="loan-monto" required placeholder="1000.00" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+          </div>
+
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 block mb-1">Tasa Mensual (%)</label>
+            <input type="number" step="0.1" id="loan-tasa" required placeholder="10" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-slate-400 block mb-1">Notas / Fecha de Cobro</label>
+          <input type="text" id="loan-notas" placeholder="Ej: Paga los 25 de cada mes" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-2xl text-sm text-white focus:outline-none focus:border-indigo-500">
+        </div>
+
+        <button type="submit" id="btn-submit-prestamo" class="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-sm transition-all active:scale-95 shadow-lg shadow-indigo-600/25">
+          Guardar Préstamo
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
