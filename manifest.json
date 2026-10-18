@@ -1,11 +1,11 @@
 {
-  "name": "Financiere App - Jarinson",
+  "name": "Financiere",
   "short_name": "Financiere",
-  "description": "Control financiero personal inteligente, patrimonio y flujo de caja",
+  "description": "Control financiero personal, patrimonio y metas de ahorro",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#090D16",
-  "theme_color": "#090D16",
+  "background_color": "#071711",
+  "theme_color": "#0E3B2E",
   "orientation": "portrait",
   "icons": [
     {
