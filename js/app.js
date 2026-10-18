@@ -68,6 +68,26 @@ async function setAuthenticatedUser(user) {
   document.getElementById('user-display-email').innerText = user.email.toUpperCase();
   document.getElementById('badge-auth-status').className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
 
+  let displayName = 'Usuario';
+  if (user.user_metadata?.full_name) {
+    displayName = user.user_metadata.full_name;
+  } else if (user.user_metadata?.name) {
+    displayName = user.user_metadata.name;
+  } else if (user.email) {
+    const raw = user.email.split('@')[0].replace(/[0-9_.]/g, '');
+    displayName = raw.charAt(0).toUpperCase() + raw.slice(1);
+  }
+
+  const elGreeting = document.getElementById('user-greeting-name');
+  if (elGreeting) elGreeting.innerText = `¡Hola, ${displayName}!`;
+
+  const elDate = document.getElementById('today-date-badge');
+  if (elDate) {
+    const d = new Date();
+    const meses = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SET', 'OCT', 'NOV', 'DIC'];
+    elDate.innerText = `${d.getDate()} ${meses[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
   const dispUserId = document.getElementById('display-user-id');
   if (dispUserId) dispUserId.innerText = user.id;
 
@@ -399,14 +419,16 @@ function renderTransacciones() {
 
 function populateDropdowns() {
   const selCta = document.getElementById('select-cuenta');
+  const selCtaDest = document.getElementById('select-cuenta-destino');
   const selCat = document.getElementById('select-categoria');
-  if (selCta) {
-    if (state.cuentas.length === 0) {
-      selCta.innerHTML = '<option value="">+ Ninguna cuenta creada</option>';
-    } else {
-      selCta.innerHTML = state.cuentas.map(c => `<option value="${c.id}">${c.nombre} (${c.moneda})</option>`).join('');
-    }
-  }
+
+  const optionsHtml = state.cuentas.length === 0
+    ? '<option value="">+ Ninguna cuenta creada</option>'
+    : state.cuentas.map(c => `<option value="${c.id}">${c.nombre} (${c.moneda} - Saldo: ${formatPEN(c.saldo_actual)})</option>`).join('');
+
+  if (selCta) selCta.innerHTML = optionsHtml;
+  if (selCtaDest) selCtaDest.innerHTML = optionsHtml;
+
   if (selCat) {
     const filteredCats = state.categorias.filter(c => c.tipo === state.tipoTx);
     selCat.innerHTML = filteredCats.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
@@ -495,16 +517,43 @@ function setupModals() {
 
   const tabGasto = document.getElementById('tab-tipo-gasto');
   const tabIngreso = document.getElementById('tab-tipo-ingreso');
+  const tabTransfer = document.getElementById('tab-tipo-transfer');
+  const boxCuentaDest = document.getElementById('box-cuenta-destino');
+  const boxCat = document.getElementById('box-categoria');
+  const labelComercio = document.getElementById('label-comercio');
+  const labelCtaOrigen = document.getElementById('label-cuenta-origen');
+  const btnSubmitTx = document.getElementById('btn-submit-tx');
 
   const openTx = (tipo = 'gasto') => {
     state.tipoTx = tipo;
+    
+    [tabGasto, tabIngreso, tabTransfer].forEach(t => {
+      if (t) t.className = 'py-2 text-[11px] font-bold rounded-xl text-slate-400 hover:text-white transition-all';
+    });
+
     if (tipo === 'gasto') {
-      tabGasto.className = 'py-2 text-xs font-bold rounded-xl bg-rose-500 text-white transition-all';
-      tabIngreso.className = 'py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all';
-    } else {
-      tabIngreso.className = 'py-2 text-xs font-bold rounded-xl bg-emerald-500 text-white transition-all';
-      tabGasto.className = 'py-2 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all';
+      tabGasto.className = 'py-2 text-[11px] font-bold rounded-xl bg-rose-500 text-white transition-all';
+      if (boxCuentaDest) boxCuentaDest.classList.add('hidden');
+      if (boxCat) boxCat.classList.remove('hidden');
+      if (labelComercio) labelComercio.innerText = 'Comercio / Descripción';
+      if (labelCtaOrigen) labelCtaOrigen.innerText = 'Cuenta / Tarjeta (De donde sale)';
+      if (btnSubmitTx) btnSubmitTx.innerText = 'Guardar Gasto';
+    } else if (tipo === 'ingreso') {
+      tabIngreso.className = 'py-2 text-[11px] font-bold rounded-xl bg-emerald-500 text-white transition-all';
+      if (boxCuentaDest) boxCuentaDest.classList.add('hidden');
+      if (boxCat) boxCat.classList.remove('hidden');
+      if (labelComercio) labelComercio.innerText = 'Origen / Concepto';
+      if (labelCtaOrigen) labelCtaOrigen.innerText = 'Cuenta Destino (A donde ingresa)';
+      if (btnSubmitTx) btnSubmitTx.innerText = 'Guardar Ingreso';
+    } else if (tipo === 'transferencia') {
+      tabTransfer.className = 'py-2 text-[11px] font-bold rounded-xl bg-indigo-600 text-white transition-all';
+      if (boxCuentaDest) boxCuentaDest.classList.remove('hidden');
+      if (boxCat) boxCat.classList.add('hidden');
+      if (labelComercio) labelComercio.innerText = 'Detalle de la Inversión / Movimiento';
+      if (labelCtaOrigen) labelCtaOrigen.innerText = 'Cuenta Origen (De donde sale)';
+      if (btnSubmitTx) btnSubmitTx.innerText = 'Confirmar Transferencia / Inversión';
     }
+
     populateDropdowns();
     modalTx.classList.remove('hidden');
     document.getElementById('input-monto').focus();
@@ -514,8 +563,9 @@ function setupModals() {
   if (btnQuickExp) btnQuickExp.onclick = () => openTx('gasto');
   if (btnQuickInc) btnQuickInc.onclick = () => openTx('ingreso');
 
-  if (tabGasto) tabGasto.onclick = () => { state.tipoTx = 'gasto'; openTx('gasto'); };
-  if (tabIngreso) tabIngreso.onclick = () => { state.tipoTx = 'ingreso'; openTx('ingreso'); };
+  if (tabGasto) tabGasto.onclick = () => openTx('gasto');
+  if (tabIngreso) tabIngreso.onclick = () => openTx('ingreso');
+  if (tabTransfer) tabTransfer.onclick = () => openTx('transferencia');
 
   if (btnOpenCta) btnOpenCta.onclick = () => modalCta.classList.remove('hidden');
   if (btnQuickAddCta) btnQuickAddCta.onclick = () => modalCta.classList.remove('hidden');
@@ -538,28 +588,62 @@ function setupModals() {
       btn.disabled = true;
       btn.innerText = 'Guardando...';
 
-      const newTx = {
-        fecha: new Date().toISOString().split('T')[0],
-        tipo: state.tipoTx,
-        monto: monto,
-        moneda: 'PEN',
-        cuenta_origen_id: cuentaId,
-        categoria_id: catId,
-        comercio: comercio,
-        user_id: state.user.id
-      };
+      if (state.tipoTx === 'transferencia') {
+        const cuentaDestinoId = document.getElementById('select-cuenta-destino').value;
+        if (!cuentaId || !cuentaDestinoId || cuentaId === cuentaDestinoId) {
+          alert('Por favor selecciona dos cuentas distintas para mover o invertir tu dinero.');
+          btn.disabled = false;
+          btn.innerText = 'Confirmar Transferencia / Inversión';
+          return;
+        }
 
-      const { error } = await db.from('transacciones').insert([newTx]);
-      btn.disabled = false;
-      btn.innerText = 'Guardar Movimiento';
+        const ctaOrigen = state.cuentas.find(c => c.id === cuentaId);
+        const ctaDestino = state.cuentas.find(c => c.id === cuentaDestinoId);
+        if (ctaOrigen && ctaDestino) {
+          await db.from('cuentas').update({ saldo_actual: Number(ctaOrigen.saldo_actual) - monto }).eq('id', cuentaId);
+          await db.from('cuentas').update({ saldo_actual: Number(ctaDestino.saldo_actual) + monto }).eq('id', cuentaDestinoId);
+        }
 
-      if (error) {
-        alert('Error: ' + error.message);
+        const newTx = {
+          fecha: new Date().toISOString().split('T')[0],
+          tipo: 'transferencia',
+          monto: monto,
+          moneda: 'PEN',
+          cuenta_origen_id: cuentaId,
+          cuenta_destino_id: cuentaDestinoId,
+          comercio: comercio || `Transferencia a ${ctaDestino?.nombre || 'Inversión'}`,
+          user_id: state.user.id
+        };
+        const { error } = await db.from('transacciones').insert([newTx]);
+        if (error) alert('Error: ' + error.message);
       } else {
-        modalTx.classList.add('hidden');
-        formTx.reset();
-        await loadUserData();
+        const newTx = {
+          fecha: new Date().toISOString().split('T')[0],
+          tipo: state.tipoTx,
+          monto: monto,
+          moneda: 'PEN',
+          cuenta_origen_id: cuentaId,
+          categoria_id: catId,
+          comercio: comercio,
+          user_id: state.user.id
+        };
+        const { error } = await db.from('transacciones').insert([newTx]);
+
+        if (!error && cuentaId) {
+          const cta = state.cuentas.find(c => c.id === cuentaId);
+          if (cta) {
+            const delta = state.tipoTx === 'ingreso' ? monto : -monto;
+            await db.from('cuentas').update({ saldo_actual: Number(cta.saldo_actual) + delta }).eq('id', cuentaId);
+          }
+        }
+        if (error) alert('Error: ' + error.message);
       }
+
+      btn.disabled = false;
+      btn.innerText = 'Guardar';
+      modalTx.classList.add('hidden');
+      formTx.reset();
+      await loadUserData();
     };
   }
 
