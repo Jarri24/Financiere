@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiere-v8-password-management';
+const CACHE_NAME = 'financiere-v9-privacy-and-crud';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

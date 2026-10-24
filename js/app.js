@@ -22,11 +22,19 @@ let state = {
     hora_reporte: '07:30'
   },
   tipoTx: 'gasto',
-  tc: 3.75
+  tc: 3.75,
+  privacyMode: localStorage.getItem('financiere_privacy') === 'true'
 };
 
-const formatPEN = (num) => 'S/ ' + Number(num || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const formatUSD = (num) => '$ ' + Number(num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const formatPEN = (num, force = false) => {
+  if (state.privacyMode && !force) return 'S/ ••••••';
+  return 'S/ ' + Number(num || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+const formatUSD = (num, force = false) => {
+  if (state.privacyMode && !force) return '$ ••••••';
+  return '$ ' + Number(num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
 // Initialize App & Auth
 document.addEventListener('DOMContentLoaded', async () => {
@@ -170,7 +178,7 @@ async function loadUserData() {
     db.from('cuentas').select('*').order('saldo_actual', { ascending: false }),
     db.from('categorias').select('*').order('nombre'),
     db.from('prestamos').select('*').order('created_at', { ascending: false }),
-    db.from('transacciones').select('*, cuentas(nombre), categorias(nombre)').order('fecha', { ascending: false }).limit(25),
+    db.from('transacciones').select('*, cuenta_origen:cuentas!transacciones_cuenta_origen_id_fkey(nombre), cuenta_destino:cuentas!transacciones_cuenta_destino_id_fkey(nombre), categorias(nombre)').order('fecha', { ascending: false }).limit(50),
     db.from('metas_ahorro').select('*').order('created_at', { ascending: false }),
     db.from('configuracion_usuario').select('*').limit(1)
   ]);
@@ -239,7 +247,7 @@ function renderDashboard() {
   const grandUSD = grandTotal / state.tc;
 
   document.getElementById('kpi-patrimonio').innerText = formatPEN(grandTotal);
-  document.getElementById('kpi-patrimonio-usd').innerText = `(${formatUSD(grandUSD)} USD)`;
+  document.getElementById('kpi-patrimonio-usd').innerText = state.privacyMode ? '($ •••••• USD)' : `(${formatUSD(grandUSD, true)} USD)`;
   
   const elAhorros = document.getElementById('kpi-ahorros');
   if (elAhorros) elAhorros.innerText = formatPEN(ahorrosPEN);
@@ -249,6 +257,11 @@ function renderDashboard() {
 
   const elLoans = document.getElementById('kpi-prestamos-total');
   if (elLoans) elLoans.innerText = formatPEN(loansPEN);
+
+  const iconPriv = document.getElementById('icon-privacy');
+  if (iconPriv) {
+    iconPriv.setAttribute('data-lucide', state.privacyMode ? 'eye-off' : 'eye');
+  }
 }
 
 // Render Cuentas
@@ -275,19 +288,29 @@ function renderCuentas() {
     const formatted = isUSD ? formatUSD(c.saldo_actual) : formatPEN(c.saldo_actual);
 
     return `
-      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] hover:border-[#2F5D8C] hover:border-slate-700 transition-all">
+      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] hover:border-[#2F5D8C] transition-all">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300 font-bold text-xs">
-            ${c.institucion.slice(0, 3)}
+          <div class="w-10 h-10 rounded-xl bg-[#0B1F3B] flex items-center justify-center text-[#C9D6E5] font-black text-xs border border-[#2F5D8C]/30 shadow-sm">
+            ${c.institucion.slice(0, 3).toUpperCase()}
           </div>
           <div>
             <h4 class="text-xs font-bold text-[#0B1F3B]">${c.nombre}</h4>
             <span class="text-[10px] px-2 py-0.5 rounded-md bg-[#E2E8F0] text-[#1E293B] uppercase tracking-wider font-semibold">${c.tipo.replace('_', ' ')}</span>
           </div>
         </div>
-        <div class="text-right">
-          <span class="text-xs font-black ${isNegative ? 'text-rose-400' : 'text-[#0B1F3B]'}">${formatted}</span>
-          ${isUSD ? `<span class="block text-[10px] text-[#475569]">~ ${formatPEN(Number(c.saldo_actual) * state.tc)}</span>` : ''}
+        <div class="flex items-center space-x-2">
+          <div class="text-right">
+            <span class="text-xs font-black ${isNegative ? 'text-rose-600' : 'text-[#0B1F3B]'}">${formatted}</span>
+            ${isUSD ? `<span class="block text-[10px] text-[#475569]">~ ${formatPEN(Number(c.saldo_actual) * state.tc)}</span>` : ''}
+          </div>
+          <div class="flex items-center pl-1.5 border-l border-[#C9D6E5]">
+            <button onclick="window.editCuenta('${c.id}')" class="p-1 rounded-lg text-[#2F5D8C] hover:text-[#0B1F3B] hover:bg-[#C9D6E5]/40 transition-all active:scale-95" title="Editar cuenta">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="window.deleteCuenta('${c.id}')" class="p-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-100 transition-all active:scale-95" title="Eliminar cuenta">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -441,7 +464,8 @@ function renderPrestamos() {
 // Render Transacciones
 function renderTransacciones() {
   const container = document.getElementById('list-transacciones');
-  document.getElementById('count-tx').innerText = `${state.transacciones.length} registros`;
+  const countTx = document.getElementById('count-tx');
+  if (countTx) countTx.innerText = `${state.transacciones.length} registros`;
   if (!container) return;
 
   if (state.transacciones.length === 0) {
@@ -451,30 +475,62 @@ function renderTransacciones() {
 
   container.innerHTML = state.transacciones.map(t => {
     const isGasto = t.tipo === 'gasto';
-    const cuentaNombre = t.cuentas ? t.cuentas.nombre : 'Cuenta';
-    const catNombre = t.categorias ? t.categorias.nombre : 'General';
+    const isTransfer = t.tipo === 'transferencia';
+    const ctaName = t.cuenta_origen ? t.cuenta_origen.nombre : (t.cuenta_destino ? `➔ ${t.cuenta_destino.nombre}` : 'Cuenta');
+    const catNombre = isTransfer ? 'Transferencia / Inversión' : (t.categorias ? t.categorias.nombre : 'General');
     const isApplePay = t.metodo_pago === 'apple_pay';
 
+    let iconHtml = '<i data-lucide="arrow-down-right" class="w-4 h-4"></i>';
+    let iconClass = 'bg-rose-500/10 text-rose-600';
+    let sign = '-';
+    let amountClass = 'text-rose-600';
+
+    if (isTransfer) {
+      iconHtml = '<i data-lucide="repeat" class="w-4 h-4"></i>';
+      iconClass = 'bg-[#123A63]/10 text-[#123A63]';
+      sign = '⇄ ';
+      amountClass = 'text-[#123A63]';
+    } else if (!isGasto) {
+      iconHtml = '<i data-lucide="arrow-up-right" class="w-4 h-4"></i>';
+      iconClass = 'bg-emerald-500/10 text-emerald-600';
+      sign = '+';
+      amountClass = 'text-emerald-600';
+    }
+
+    if (isApplePay) {
+      iconHtml = '<i data-lucide="smartphone" class="w-4 h-4"></i>';
+    }
+
     return `
-      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] hover:border-[#2F5D8C]">
+      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] hover:border-[#2F5D8C] transition-all">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 rounded-xl ${isGasto ? 'bg-rose-500/10 text-rose-400' : 'bg-emerald-500/10 text-[#123A63]'} flex items-center justify-center font-bold text-xs">
-            ${isApplePay ? '<i data-lucide="smartphone" class="w-4 h-4"></i>' : (isGasto ? '<i data-lucide="arrow-down-right" class="w-4 h-4"></i>' : '<i data-lucide="arrow-up-right" class="w-4 h-4"></i>')}
+          <div class="w-10 h-10 rounded-xl ${iconClass} flex items-center justify-center font-bold text-xs">
+            ${iconHtml}
           </div>
           <div>
             <h4 class="text-xs font-bold text-[#0B1F3B]">${t.comercio || t.descripcion || catNombre}</h4>
             <div class="flex items-center gap-1.5 text-[10px] text-[#2F5D8C]">
               <span>${catNombre}</span>
               <span>•</span>
-              <span class="text-[#475569]">${t.fecha}</span>
+              <span class="text-[#475569]">${t.fecha || ''}</span>
             </div>
           </div>
         </div>
-        <div class="text-right">
-          <span class="text-xs font-black ${isGasto ? 'text-rose-400' : 'text-[#123A63]'}">
-            ${isGasto ? '-' : '+'}${formatPEN(t.monto)}
-          </span>
-          <span class="block text-[10px] text-[#475569]">${cuentaNombre}</span>
+        <div class="flex items-center space-x-2">
+          <div class="text-right">
+            <span class="text-xs font-black ${amountClass}">
+              ${sign}${formatPEN(t.monto)}
+            </span>
+            <span class="block text-[10px] text-[#475569]">${ctaName}</span>
+          </div>
+          <div class="flex items-center pl-1.5 border-l border-[#C9D6E5]">
+            <button onclick="window.editTransaccion('${t.id}')" class="p-1 rounded-lg text-[#2F5D8C] hover:text-[#0B1F3B] hover:bg-[#C9D6E5]/40 transition-all active:scale-95" title="Editar movimiento">
+              <i data-lucide="edit-2" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="window.deleteTransaccion('${t.id}')" class="p-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-100 transition-all active:scale-95" title="Eliminar movimiento">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -524,6 +580,20 @@ function setupNavigation() {
       btnRefresh.classList.add('animate-spin');
       await loadUserData();
       setTimeout(() => btnRefresh.classList.remove('animate-spin'), 600);
+    };
+  }
+
+  const btnPrivacy = document.getElementById('btn-toggle-privacy');
+  if (btnPrivacy) {
+    btnPrivacy.onclick = () => {
+      state.privacyMode = !state.privacyMode;
+      localStorage.setItem('financiere_privacy', state.privacyMode ? 'true' : 'false');
+      renderDashboard();
+      renderCuentas();
+      renderMetas();
+      renderPrestamos();
+      renderTransacciones();
+      if (window.lucide) lucide.createIcons();
     };
   }
 }
@@ -588,12 +658,21 @@ function setupModals() {
   const labelCtaOrigen = document.getElementById('label-cuenta-origen');
   const btnSubmitTx = document.getElementById('btn-submit-tx');
 
-  const openTx = (tipo = 'gasto') => {
+  const openTx = (tipo = 'gasto', isEdit = false) => {
     state.tipoTx = tipo;
     
     [tabGasto, tabIngreso, tabTransfer].forEach(t => {
-      if (t) t.className = 'py-2 text-[11px] font-bold rounded-xl text-[#2F5D8C] hover:text-white transition-all';
+      if (t) t.className = 'py-2 text-[11px] font-bold rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B] transition-all';
     });
+
+    if (!isEdit) {
+      const txIdEl = document.getElementById('tx-id');
+      if (txIdEl) txIdEl.value = '';
+      const txTitle = document.getElementById('modal-tx-title');
+      if (txTitle) txTitle.innerText = 'Nuevo Movimiento';
+      const fTx = document.getElementById('form-tx');
+      if (fTx) fTx.reset();
+    }
 
     const inputComercio = document.getElementById('input-comercio');
 
@@ -604,7 +683,7 @@ function setupModals() {
       if (labelComercio) labelComercio.innerText = 'Comercio / Detalle';
       if (inputComercio) inputComercio.placeholder = 'Ej: Supermercado, Restaurante, Farmacia, Transporte';
       if (labelCtaOrigen) labelCtaOrigen.innerText = 'Cuenta / Tarjeta (De donde sale)';
-      if (btnSubmitTx) btnSubmitTx.innerText = 'Guardar Gasto';
+      if (btnSubmitTx) btnSubmitTx.innerText = isEdit ? 'Guardar Cambios' : 'Guardar Gasto';
     } else if (tipo === 'ingreso') {
       tabIngreso.className = 'py-2 text-[11px] font-bold rounded-xl bg-[#123A63] text-white font-bold transition-all';
       if (boxCuentaDest) boxCuentaDest.classList.add('hidden');
@@ -612,21 +691,22 @@ function setupModals() {
       if (labelComercio) labelComercio.innerText = 'Origen / Concepto';
       if (inputComercio) inputComercio.placeholder = 'Ej: Sueldo mensual, Bono, Venta, Honorarios';
       if (labelCtaOrigen) labelCtaOrigen.innerText = 'Cuenta Destino (A donde ingresa)';
-      if (btnSubmitTx) btnSubmitTx.innerText = 'Guardar Ingreso';
+      if (btnSubmitTx) btnSubmitTx.innerText = isEdit ? 'Guardar Cambios' : 'Guardar Ingreso';
     } else if (tipo === 'transferencia') {
-      tabTransfer.className = 'py-2 text-[11px] font-bold rounded-xl bg-[#1F6F54] text-[#0B1F3B] font-bold border border-[#5FB88A]/40 transition-all';
+      tabTransfer.className = 'py-2 text-[11px] font-bold rounded-xl bg-[#123A63] text-white font-bold transition-all';
       if (boxCuentaDest) boxCuentaDest.classList.remove('hidden');
       if (boxCat) boxCat.classList.add('hidden');
       if (labelComercio) labelComercio.innerText = 'Detalle de la Inversión / Movimiento';
       if (inputComercio) inputComercio.placeholder = 'Ej: Depósito a Plazo, Aporte a Fondo Mutuo, Compra Acciones';
       if (labelCtaOrigen) labelCtaOrigen.innerText = 'Cuenta Origen (De donde sale)';
-      if (btnSubmitTx) btnSubmitTx.innerText = 'Confirmar Transferencia / Inversión';
+      if (btnSubmitTx) btnSubmitTx.innerText = isEdit ? 'Guardar Cambios' : 'Confirmar Transferencia / Inversión';
     }
 
     populateDropdowns();
     modalTx.classList.remove('hidden');
-    document.getElementById('input-monto').focus();
+    if (!isEdit) document.getElementById('input-monto').focus();
   };
+  window.openTx = openTx;
 
   const btnQuickInvest = document.getElementById('btn-quick-invest');
   if (btnFloating) btnFloating.onclick = () => openTx('gasto');
@@ -638,8 +718,19 @@ function setupModals() {
   if (tabIngreso) tabIngreso.onclick = () => openTx('ingreso');
   if (tabTransfer) tabTransfer.onclick = () => openTx('transferencia');
 
-  if (btnOpenCta) btnOpenCta.onclick = () => modalCta.classList.remove('hidden');
-  if (btnQuickAddCta) btnQuickAddCta.onclick = () => modalCta.classList.remove('hidden');
+  const resetCtaModal = () => {
+    document.getElementById('cta-id').value = '';
+    document.getElementById('modal-cuenta-title').innerText = 'Nueva Cuenta o Tarjeta';
+    document.getElementById('btn-submit-cuenta').innerText = 'Guardar Cuenta';
+    const fCta = document.getElementById('form-cuenta');
+    if (fCta) fCta.reset();
+    const bCustom = document.getElementById('box-custom-institucion');
+    if (bCustom) bCustom.classList.add('hidden');
+    modalCta.classList.remove('hidden');
+  };
+
+  if (btnOpenCta) btnOpenCta.onclick = resetCtaModal;
+  if (btnQuickAddCta) btnQuickAddCta.onclick = resetCtaModal;
   if (btnOpenLoan) btnOpenLoan.onclick = () => modalLoan.classList.remove('hidden');
 
   document.getElementById('btn-close-modal-tx').onclick = () => modalTx.classList.add('hidden');
@@ -650,6 +741,7 @@ function setupModals() {
   if (formTx) {
     formTx.onsubmit = async (e) => {
       e.preventDefault();
+      const txId = document.getElementById('tx-id').value;
       const monto = parseFloat(document.getElementById('input-monto').value);
       const comercio = document.getElementById('input-comercio').value;
       const cuentaId = document.getElementById('select-cuenta').value || null;
@@ -659,7 +751,34 @@ function setupModals() {
       btn.disabled = true;
       btn.innerText = 'Guardando...';
 
-      if (state.tipoTx === 'transferencia') {
+      if (txId) {
+        const oldTx = state.transacciones.find(t => t.id === txId);
+        if (oldTx && oldTx.cuenta_origen_id) {
+          const oldCta = state.cuentas.find(c => c.id === oldTx.cuenta_origen_id);
+          if (oldCta) {
+            const revDelta = oldTx.tipo === 'gasto' ? Number(oldTx.monto) : -Number(oldTx.monto);
+            await db.from('cuentas').update({ saldo_actual: Number(oldCta.saldo_actual) + revDelta }).eq('id', oldTx.cuenta_origen_id);
+          }
+        }
+
+        const updateData = {
+          tipo: state.tipoTx,
+          monto: monto,
+          cuenta_origen_id: cuentaId,
+          categoria_id: catId,
+          comercio: comercio
+        };
+        const { error } = await db.from('transacciones').update(updateData).eq('id', txId);
+
+        if (!error && cuentaId) {
+          const cta = state.cuentas.find(c => c.id === cuentaId);
+          if (cta) {
+            const newDelta = state.tipoTx === 'ingreso' ? monto : -monto;
+            await db.from('cuentas').update({ saldo_actual: Number(cta.saldo_actual) + newDelta }).eq('id', cuentaId);
+          }
+        }
+        if (error) alert('Error al editar movimiento: ' + error.message);
+      } else if (state.tipoTx === 'transferencia') {
         const cuentaDestinoId = document.getElementById('select-cuenta-destino').value;
         if (!cuentaId || !cuentaDestinoId || cuentaId === cuentaDestinoId) {
           alert('Por favor selecciona dos cuentas distintas para mover o invertir tu dinero.');
@@ -748,20 +867,38 @@ function setupModals() {
       const btn = document.getElementById('btn-submit-cuenta');
 
       btn.disabled = true;
-      const newCta = {
-        nombre, institucion, tipo, moneda, saldo_actual: saldo, user_id: state.user.id
-      };
 
-      const { error } = await db.from('cuentas').insert([newCta]);
-      btn.disabled = false;
+      const ctaId = document.getElementById('cta-id').value;
+      if (ctaId) {
+        const { error } = await db.from('cuentas').update({
+          nombre, institucion, tipo, moneda, saldo_actual: saldo
+        }).eq('id', ctaId);
+        btn.disabled = false;
 
-      if (error) {
-        alert('Error: ' + error.message);
+        if (error) {
+          alert('Error al actualizar cuenta: ' + error.message);
+        } else {
+          modalCta.classList.add('hidden');
+          formCta.reset();
+          if (boxCustomInst) boxCustomInst.classList.add('hidden');
+          await loadUserData();
+        }
       } else {
-        modalCta.classList.add('hidden');
-        formCta.reset();
-        if (boxCustomInst) boxCustomInst.classList.add('hidden');
-        await loadUserData();
+        const newCta = {
+          nombre, institucion, tipo, moneda, saldo_actual: saldo, user_id: state.user.id
+        };
+
+        const { error } = await db.from('cuentas').insert([newCta]);
+        btn.disabled = false;
+
+        if (error) {
+          alert('Error al crear cuenta: ' + error.message);
+        } else {
+          modalCta.classList.add('hidden');
+          formCta.reset();
+          if (boxCustomInst) boxCustomInst.classList.add('hidden');
+          await loadUserData();
+        }
       }
     };
   }
@@ -1146,6 +1283,101 @@ window.deleteMeta = async (metaId) => {
     const { error } = await db.from('metas_ahorro').delete().eq('id', metaId);
     if (error) alert('Error: ' + error.message);
     else await loadUserData();
+  }
+};
+
+window.editCuenta = (id) => {
+  const c = state.cuentas.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('cta-id').value = c.id;
+  document.getElementById('modal-cuenta-title').innerText = 'Editar Cuenta o Tarjeta';
+  document.getElementById('btn-submit-cuenta').innerText = 'Guardar Cambios';
+  document.getElementById('cta-nombre').value = c.nombre;
+  document.getElementById('cta-tipo').value = c.tipo;
+  document.getElementById('cta-moneda').value = c.moneda;
+  document.getElementById('cta-saldo').value = c.saldo_actual;
+
+  const selInst = document.getElementById('cta-institucion');
+  const customBox = document.getElementById('box-custom-institucion');
+  const customInput = document.getElementById('cta-institucion-custom');
+
+  let match = false;
+  for (let opt of selInst.options) {
+    if (opt.value === c.institucion) {
+      selInst.value = c.institucion;
+      match = true;
+      break;
+    }
+  }
+  if (!match) {
+    selInst.value = 'OTRO';
+    customBox.classList.remove('hidden');
+    customInput.value = c.institucion;
+  } else {
+    customBox.classList.add('hidden');
+  }
+
+  document.getElementById('modal-cuenta').classList.remove('hidden');
+};
+
+window.deleteCuenta = async (id) => {
+  const c = state.cuentas.find(x => x.id === id);
+  if (!c) return;
+  if (!confirm(`¿Estás seguro de eliminar la cuenta "${c.nombre}"?`)) return;
+
+  const { data: linkedTx } = await db.from('transacciones')
+    .select('id')
+    .or(`cuenta_origen_id.eq.${id},cuenta_destino_id.eq.${id}`)
+    .limit(1);
+
+  if (linkedTx && linkedTx.length > 0) {
+    const eliminarConTx = confirm(`Esta cuenta tiene movimientos registrados.\n¿Deseas eliminar la cuenta y todas sus transacciones vinculadas?`);
+    if (!eliminarConTx) return;
+    await db.from('transacciones').delete().or(`cuenta_origen_id.eq.${id},cuenta_destino_id.eq.${id}`);
+  }
+
+  const { error } = await db.from('cuentas').delete().eq('id', id);
+  if (error) {
+    alert('Error al eliminar cuenta: ' + error.message);
+  } else {
+    await loadUserData();
+  }
+};
+
+window.editTransaccion = (id) => {
+  const t = state.transacciones.find(x => x.id === id);
+  if (!t) return;
+  document.getElementById('tx-id').value = t.id;
+  document.getElementById('modal-tx-title').innerText = 'Editar Movimiento';
+  document.getElementById('btn-submit-tx').innerText = 'Guardar Cambios';
+
+  window.openTx(t.tipo, true);
+
+  document.getElementById('input-monto').value = t.monto;
+  document.getElementById('input-comercio').value = t.comercio || t.descripcion || '';
+  if (t.cuenta_origen_id) document.getElementById('select-cuenta').value = t.cuenta_origen_id;
+  if (t.categoria_id) document.getElementById('select-categoria').value = t.categoria_id;
+  if (t.cuenta_destino_id) document.getElementById('select-cuenta-destino').value = t.cuenta_destino_id;
+};
+
+window.deleteTransaccion = async (id) => {
+  const t = state.transacciones.find(x => x.id === id);
+  if (!t) return;
+  if (!confirm('¿Estás seguro de eliminar este movimiento?')) return;
+
+  if (t.cuenta_origen_id) {
+    const cta = state.cuentas.find(c => c.id === t.cuenta_origen_id);
+    if (cta) {
+      const delta = t.tipo === 'gasto' ? Number(t.monto) : -Number(t.monto);
+      await db.from('cuentas').update({ saldo_actual: Number(cta.saldo_actual) + delta }).eq('id', t.cuenta_origen_id);
+    }
+  }
+
+  const { error } = await db.from('transacciones').delete().eq('id', id);
+  if (error) {
+    alert('Error al eliminar movimiento: ' + error.message);
+  } else {
+    await loadUserData();
   }
 };
 

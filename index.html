@@ -155,7 +155,12 @@
         <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0B1F3B] via-[#0E284A] to-[#0B1F3B] p-5 border border-[#123A63] shadow-2xl">
           <div class="absolute -top-12 -right-12 w-36 h-36 bg-[#2F5D8C]/25 rounded-full blur-2xl"></div>
           <div class="flex justify-between items-start mb-2">
-            <span class="text-xs font-semibold uppercase tracking-wider text-[#C9D6E5]">Patrimonio Total</span>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-[#C9D6E5]">Patrimonio Total</span>
+              <button type="button" id="btn-toggle-privacy" class="p-1 rounded-lg text-[#C9D6E5] hover:text-white hover:bg-white/10 transition-all active:scale-90" title="Ocultar / Mostrar montos">
+                <i data-lucide="eye" id="icon-privacy" class="w-4 h-4"></i>
+              </button>
+            </div>
             <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-[#123A63] text-[#C9D6E5] border border-[#2F5D8C]/40 font-medium">En vivo</span>
           </div>
           <div class="flex items-baseline gap-2 mb-4">
@@ -337,13 +342,14 @@
   <div id="modal-tx" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
     <div class="bg-white border border-[#C9D6E5] rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center">
-        <h3 class="text-base font-bold text-[#0B1F3B]">Nuevo Movimiento</h3>
+        <h3 id="modal-tx-title" class="text-base font-bold text-[#0B1F3B]">Nuevo Movimiento</h3>
         <button id="btn-close-modal-tx" class="p-1.5 rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B]">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <form id="form-tx" class="space-y-3.5">
+        <input type="hidden" id="tx-id" value="">
         <div class="grid grid-cols-3 gap-1.5 p-1.5 bg-[#F1F5F9] rounded-2xl border border-[#CBD5E1]">
           <button type="button" id="tab-tipo-gasto" class="py-2 text-[11px] font-bold rounded-xl bg-rose-500 text-white transition-all">Gasto</button>
           <button type="button" id="tab-tipo-ingreso" class="py-2 text-[11px] font-bold rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B] transition-all">Ingreso</button>
@@ -402,13 +408,14 @@
   <div id="modal-cuenta" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
     <div class="bg-white border border-[#C9D6E5] rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center">
-        <h3 class="text-base font-bold text-[#0B1F3B]">Nueva Cuenta o Tarjeta</h3>
+        <h3 id="modal-cuenta-title" class="text-base font-bold text-[#0B1F3B]">Nueva Cuenta o Tarjeta</h3>
         <button id="btn-close-modal-cuenta" class="p-1.5 rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B]">
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
 
       <form id="form-cuenta" class="space-y-3.5">
+        <input type="hidden" id="cta-id" value="">
         <div>
           <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Nombre de la Cuenta</label>
           <input type="text" id="cta-nombre" required placeholder="Ej: Cuenta Sueldo, Tarjeta de Crédito, Billetera Digital" class="w-full px-4 py-2.5 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-sm text-[#0B1F3B] focus:outline-none focus:border-[#5FB88A]">
