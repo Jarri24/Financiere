@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financiere-v10-icons-immediate';
+const CACHE_NAME = 'financiere-v11-all-modules-complete';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

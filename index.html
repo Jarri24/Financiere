@@ -241,6 +241,23 @@
           <div class="space-y-3" id="list-metas"></div>
         </div>
 
+        <!-- Gastos Recurrentes & Suscripciones Fijas -->
+        <div class="rounded-3xl bg-white p-5 border border-[#C9D6E5] shadow-sm space-y-3">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-sm font-bold text-[#0B1F3B] flex items-center gap-1.5">
+                <i data-lucide="calendar" class="w-4 h-4 text-[#123A63]"></i>
+                Gastos Fijos & Suscripciones
+              </h2>
+              <span class="text-[11px] text-[#2F5D8C]" id="total-comprometido-recurrentes">Comprometido: S/ 0.00/mes</span>
+            </div>
+            <button id="btn-open-modal-recurrente" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-[#0B1F3B] text-white hover:bg-[#123A63] flex items-center gap-1 transition-all active:scale-95 shadow-sm">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Nueva
+            </button>
+          </div>
+          <div class="space-y-2.5" id="list-recurrentes"></div>
+        </div>
+
       </section>
 
       <!-- TAB 2: PRESTAMOS -->
@@ -271,38 +288,111 @@
 
       <!-- TAB 3: MOVIMIENTOS -->
       <section id="view-movimientos" class="space-y-4 tab-view hidden">
-        <div class="flex items-center justify-between">
+        <!-- Presupuestos Mensuales (Semáforo de Gastos) -->
+        <div class="rounded-3xl bg-white p-5 border border-[#C9D6E5] shadow-sm space-y-3">
+          <div class="flex justify-between items-center">
+            <div>
+              <h2 class="text-sm font-bold text-[#0B1F3B] flex items-center gap-1.5">
+                <i data-lucide="pie-chart" class="w-4 h-4 text-[#123A63]"></i>
+                Presupuestos del Mes
+              </h2>
+              <span class="text-[11px] text-[#2F5D8C]" id="resumen-presupuestos">Límites y semáforo de gastos</span>
+            </div>
+            <button id="btn-open-modal-presupuesto" class="text-xs font-bold px-3 py-1.5 rounded-xl bg-[#0B1F3B] text-white hover:bg-[#123A63] flex items-center gap-1 transition-all active:scale-95 shadow-sm">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i> Asignar
+            </button>
+          </div>
+          <div class="space-y-3" id="list-presupuestos"></div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
           <h2 class="text-sm font-bold text-[#0B1F3B]">Historial de Movimientos</h2>
           <span class="text-xs text-[#475569]" id="count-tx">0 registros</span>
         </div>
         <div class="space-y-2.5" id="list-transacciones"></div>
       </section>
 
-      <!-- TAB 4: AUTOMATIZACION IPHONE -->
+      <!-- TAB 4: AUTOMATIZACIONES INTELIGENTES -->
       <section id="view-atajos" class="space-y-4 tab-view hidden">
-        <div class="rounded-3xl bg-gradient-to-br from-slate-900 to-slate-950 p-5 border border-[#1F6F54]/50 shadow-xl space-y-4">
+        <div class="rounded-3xl bg-white p-5 border border-[#C9D6E5] shadow-sm space-y-4">
           <div class="flex items-center gap-3">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
-              <i data-lucide="smartphone" class="w-6 h-6"></i>
+            <div class="w-12 h-12 rounded-2xl bg-[#0B1F3B] flex items-center justify-center text-white shadow-md">
+              <i data-lucide="zap" class="w-6 h-6 text-[#C9D6E5]"></i>
             </div>
             <div>
-              <h2 class="text-base font-bold text-white">Atajo de Apple Wallet</h2>
-              <p class="text-xs text-[#475569]">Automatiza tus gastos en 1 segundo</p>
+              <h2 class="text-base font-bold text-[#0B1F3B]">Centro de Automatización</h2>
+              <p class="text-xs text-[#2F5D8C]">3 canales de costo $0.00 para registrar gastos</p>
             </div>
           </div>
 
-          <p class="text-xs text-[#F6FBF7] leading-relaxed">
-            Vincula tus compras de Apple Pay en tu iPhone o Apple Watch directamente a tu usuario.
-          </p>
-
-          <div class="p-3.5 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] space-y-2 font-mono text-[11px]">
-            <div class="text-[#475569] text-[10px] uppercase font-bold tracking-wider">Tu User ID para el Atajo:</div>
-            <div class="text-[#5FB88A] break-all select-all font-semibold" id="display-user-id">Inicia sesión para ver tu ID</div>
+          <div class="p-3.5 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] space-y-1.5 font-mono text-[11px]">
+            <div class="text-[#2F5D8C] text-[10px] uppercase font-bold tracking-wider">Tu User ID Único:</div>
+            <div class="text-[#123A63] break-all select-all font-bold" id="display-user-id">Inicia sesión para ver tu ID</div>
           </div>
 
-          <button id="btn-copy-shortcut-json" class="w-full py-3 px-4 rounded-2xl bg-[#1F6F54] hover:bg-[#2A8265] text-[#F6FBF7] font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-indigo-600/30">
-            <i data-lucide="copy" class="w-4 h-4"></i> Copiar Configuración del Atajo
+          <button id="btn-copy-shortcut-json" class="w-full py-3 px-4 rounded-2xl bg-[#0B1F3B] hover:bg-[#123A63] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all active:scale-95 shadow">
+            <i data-lucide="copy" class="w-4 h-4"></i> Copiar Credenciales del Atajo
           </button>
+        </div>
+
+        <!-- 3 Canales de Ingesta Inteligente -->
+        <div class="space-y-3">
+          <!-- Canal 1: Apple Pay -->
+          <div class="p-4 rounded-2xl bg-white border border-[#C9D6E5] shadow-sm space-y-2">
+            <div class="flex justify-between items-start">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-[#0B1F3B] text-white flex items-center justify-center font-bold text-xs">
+                  <i data-lucide="credit-card" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold text-[#0B1F3B]">1. Apple Pay / Apple Wallet</h4>
+                  <p class="text-[10px] text-[#2F5D8C]">Compras físicas en POS con iPhone o Apple Watch</p>
+                </div>
+              </div>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20">Costo $0</span>
+            </div>
+            <p class="text-[11px] text-[#475569]">
+              Dispara el evento nativo en segundo plano cada vez que acercas tu tarjeta al POS. Sin clics adicionales.
+            </p>
+          </div>
+
+          <!-- Canal 2: Vouchers Yape & Plin -->
+          <div class="p-4 rounded-2xl bg-white border border-[#C9D6E5] shadow-sm space-y-2">
+            <div class="flex justify-between items-start">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-[#123A63] text-white flex items-center justify-center font-bold text-xs">
+                  <i data-lucide="smartphone" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold text-[#0B1F3B]">2. Vouchers Yape & Plin (Share Sheet)</h4>
+                  <p class="text-[10px] text-[#2F5D8C]">Toca "Compartir Comprobante" en Yape o Plin</p>
+                </div>
+              </div>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20">Costo $0</span>
+            </div>
+            <p class="text-[11px] text-[#475569]">
+              Apple VisionKit OCR lee la captura en 0.2 segundos directamente en tu iPhone y envía el gasto sin abrir la app.
+            </p>
+          </div>
+
+          <!-- Canal 3: Correo Bancario Gmail -->
+          <div class="p-4 rounded-2xl bg-white border border-[#C9D6E5] shadow-sm space-y-2">
+            <div class="flex justify-between items-start">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-[#2F5D8C] text-white flex items-center justify-center font-bold text-xs">
+                  <i data-lucide="mail" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h4 class="text-xs font-bold text-[#0B1F3B]">3. Confirmaciones Gmail (BCP / BBVA)</h4>
+                  <p class="text-[10px] text-[#2F5D8C]">Google Apps Script en piloto automático</p>
+                </div>
+              </div>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20">Costo $0</span>
+            </div>
+            <p class="text-[11px] text-[#475569]">
+              Script ligero en Google Apps Script que detecta correos de compras de tarjetas plásticas y los ingresa a tu balance.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -769,6 +859,102 @@
 
         <button type="submit" id="btn-save-settings" class="w-full py-3.5 rounded-2xl bg-[#0B1F3B] hover:bg-[#123A63] text-white font-bold text-sm transition-all active:scale-95 shadow-lg shadow-[#0B1F3B]/30">
           Guardar Configuración
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: GASTO RECURRENTE / SUSCRIPCION -->
+  <div id="modal-recurrente" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-white border border-[#C9D6E5] rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 id="modal-recurrente-title" class="text-base font-bold text-[#0B1F3B]">Nueva Suscripción / Gasto Fijo</h3>
+        <button id="btn-close-modal-recurrente" class="p-1.5 rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-recurrente" class="space-y-3.5">
+        <input type="hidden" id="rec-id" value="">
+        <div>
+          <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Nombre del Servicio o Pago</label>
+          <input type="text" id="rec-nombre" required placeholder="Ej: Netflix, Spotify, Internet, Gimnasio, Alquiler" class="w-full px-4 py-2.5 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-sm focus:outline-none focus:border-[#2F5D8C]">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Monto</label>
+            <input type="number" step="0.01" id="rec-monto" required placeholder="0.00" class="w-full px-4 py-2.5 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-sm focus:outline-none focus:border-[#2F5D8C]">
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Moneda</label>
+            <select id="rec-moneda" class="w-full px-4 py-2.5 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-sm focus:outline-none">
+              <option value="PEN">Soles (PEN)</option>
+              <option value="USD">Dólares (USD)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Día de Pago (1 al 31)</label>
+            <input type="number" min="1" max="31" id="rec-dia" required placeholder="Ej: 15" class="w-full px-4 py-2.5 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-sm focus:outline-none focus:border-[#2F5D8C]">
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Frecuencia</label>
+            <select id="rec-frecuencia" class="w-full px-4 py-2.5 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-sm focus:outline-none">
+              <option value="mensual">Mensual</option>
+              <option value="anual">Anual</option>
+              <option value="quincenal">Quincenal</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Cuenta donde se debita</label>
+          <select id="rec-cuenta" class="w-full px-4 py-2.5 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-sm focus:outline-none"></select>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Categoría</label>
+          <select id="rec-categoria" class="w-full px-4 py-2.5 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-sm focus:outline-none"></select>
+        </div>
+
+        <button type="submit" id="btn-submit-recurrente" class="w-full py-3.5 rounded-2xl bg-[#0B1F3B] hover:bg-[#123A63] text-white font-bold text-sm transition-all active:scale-95 shadow-lg shadow-[#0B1F3B]/30">
+          Guardar Suscripción
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ASIGNAR PRESUPUESTO MENSUAL -->
+  <div id="modal-presupuesto" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4 transition-all">
+    <div class="bg-white border border-[#C9D6E5] rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 id="modal-presupuesto-title" class="text-base font-bold text-[#0B1F3B]">Asignar Presupuesto Mensual</h3>
+        <button id="btn-close-modal-presupuesto" class="p-1.5 rounded-xl text-[#2F5D8C] hover:text-[#0B1F3B]">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="form-presupuesto" class="space-y-3.5">
+        <input type="hidden" id="pres-id" value="">
+        <div>
+          <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Categoría a Presupuestar</label>
+          <select id="pres-categoria" required class="w-full px-4 py-2.5 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-sm focus:outline-none"></select>
+        </div>
+
+        <div>
+          <label class="text-[11px] font-semibold text-[#0B1F3B] block mb-1">Límite Mensual Máximo (S/)</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[#2F5D8C]">S/</span>
+            <input type="number" step="1" id="pres-limite" required placeholder="Ej: 800" class="w-full pl-10 pr-4 py-2.5 bg-[#F2F5F8] border border-[#C9D6E5] text-[#0B1F3B] rounded-2xl text-base font-bold focus:outline-none focus:border-[#2F5D8C]">
+          </div>
+          <p class="text-[10px] text-[#2F5D8C] mt-1">El semáforo te alertará en verde (&lt;70%), amarillo (70-90%) y rojo (&gt;90%).</p>
+        </div>
+
+        <button type="submit" id="btn-submit-presupuesto" class="w-full py-3.5 rounded-2xl bg-[#0B1F3B] hover:bg-[#123A63] text-white font-bold text-sm transition-all active:scale-95 shadow-lg shadow-[#0B1F3B]/30">
+          Guardar Presupuesto
         </button>
       </form>
     </div>

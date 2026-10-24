@@ -11,6 +11,8 @@ let state = {
   prestamos: [],
   transacciones: [],
   metas: [],
+  recurrentes: [],
+  presupuestos: [],
   config: {
     nombre: 'Jarinson',
     email_reportes: '',
@@ -174,13 +176,15 @@ function setupAuthEvents() {
 async function loadUserData() {
   if (!state.user) return;
 
-  const [ctasRes, catsRes, loansRes, txRes, metasRes, configRes] = await Promise.all([
+  const [ctasRes, catsRes, loansRes, txRes, metasRes, configRes, recRes, presRes] = await Promise.all([
     db.from('cuentas').select('*').order('saldo_actual', { ascending: false }),
     db.from('categorias').select('*').order('nombre'),
     db.from('prestamos').select('*').order('created_at', { ascending: false }),
     db.from('transacciones').select('*, cuenta_origen:cuentas!transacciones_cuenta_origen_id_fkey(nombre), cuenta_destino:cuentas!transacciones_cuenta_destino_id_fkey(nombre), categorias(nombre)').order('fecha', { ascending: false }).limit(50),
     db.from('metas_ahorro').select('*').order('created_at', { ascending: false }),
-    db.from('configuracion_usuario').select('*').limit(1)
+    db.from('configuracion_usuario').select('*').limit(1),
+    db.from('gastos_recurrentes').select('*, cuentas(nombre), categorias(nombre)').order('dia_pago', { ascending: true }),
+    db.from('presupuestos_mensuales').select('*, categorias(nombre, color, icono)')
   ]);
 
   if (ctasRes.data) state.cuentas = ctasRes.data;
@@ -188,6 +192,24 @@ async function loadUserData() {
   if (loansRes.data) state.prestamos = loansRes.data;
   if (txRes.data) state.transacciones = txRes.data;
   if (metasRes.data) state.metas = metasRes.data;
+
+  if (recRes.data) {
+    state.recurrentes = recRes.data;
+    localStorage.setItem('financiere_recurrentes_' + state.user.id, JSON.stringify(recRes.data));
+  } else {
+    try {
+      state.recurrentes = JSON.parse(localStorage.getItem('financiere_recurrentes_' + state.user.id) || '[]');
+    } catch(e) { state.recurrentes = []; }
+  }
+
+  if (presRes.data) {
+    state.presupuestos = presRes.data;
+    localStorage.setItem('financiere_presupuestos_' + state.user.id, JSON.stringify(presRes.data));
+  } else {
+    try {
+      state.presupuestos = JSON.parse(localStorage.getItem('financiere_presupuestos_' + state.user.id) || '[]');
+    } catch(e) { state.presupuestos = []; }
+  }
 
   if (configRes.data && configRes.data.length > 0) {
     state.config = { ...state.config, ...configRes.data[0] };
@@ -214,7 +236,9 @@ async function loadUserData() {
   renderDashboard();
   renderCuentas();
   renderMetas();
+  renderRecurrentes();
   renderPrestamos();
+  renderPresupuestos();
   renderTransacciones();
   populateDropdowns();
   if (window.lucide) lucide.createIcons();
@@ -320,7 +344,6 @@ function renderCuentas() {
     lucide.createIcons();
   }
 }
-}
 
 // Render Metas de Ahorro
 function renderMetas() {
@@ -405,6 +428,93 @@ function renderMetas() {
   }).join('');
 }
 
+// Render Gastos Recurrentes / Suscripciones
+function renderRecurrentes() {
+  const container = document.getElementById('list-recurrentes');
+  const countComprometido = document.getElementById('total-comprometido-recurrentes');
+  if (!container) return;
+
+  const totalPEN = state.recurrentes.reduce((acc, r) => {
+    const m = Number(r.monto || 0);
+    return acc + (r.moneda === 'USD' ? m * state.tc : m);
+  }, 0);
+
+  if (countComprometido) {
+    countComprometido.innerText = `Comprometido: ${formatPEN(totalPEN)}/mes`;
+  }
+
+  if (state.recurrentes.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-6 px-4 rounded-2xl bg-[#F2F5F8] border border-dashed border-[#C9D6E5] space-y-2">
+        <p class="text-xs text-[#2F5D8C]">No tienes suscripciones o gastos fijos registrados (Netflix, Spotify, Luz, etc.).</p>
+        <button onclick="document.getElementById('modal-recurrente').classList.remove('hidden')" class="px-3.5 py-1.5 rounded-xl bg-white text-[#123A63] border border-[#C9D6E5] font-bold text-xs hover:bg-[#123A63]/10">
+          + Agregar primera suscripción
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  const currentMonthStr = new Date().toISOString().slice(0, 7);
+
+  container.innerHTML = state.recurrentes.map(r => {
+    const isUSD = r.moneda === 'USD';
+    const formatted = isUSD ? formatUSD(r.monto) : formatPEN(r.monto);
+    const ctaNombre = r.cuentas ? r.cuentas.nombre : 'Sin cuenta asignada';
+    const yaPagado = r.ultimo_pago_fecha && r.ultimo_pago_fecha.startsWith(currentMonthStr);
+
+    return `
+      <div class="flex items-center justify-between p-3 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] hover:border-[#2F5D8C] transition-all">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-[#0B1F3B] flex items-center justify-center text-[#C9D6E5] font-bold text-xs border border-[#2F5D8C]/30 shadow-sm">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h4 class="text-xs font-bold text-[#0B1F3B]">${r.nombre}</h4>
+              ${yaPagado ? `
+                <span class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 font-bold border border-emerald-500/20">
+                  ✓ Pagado este mes
+                </span>
+              ` : `
+                <span class="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 font-bold border border-amber-500/20">
+                  Día ${r.dia_pago || 1}
+                </span>
+              `}
+            </div>
+            <div class="flex items-center gap-1.5 text-[10px] text-[#2F5D8C] mt-0.5">
+              <span>${ctaNombre}</span>
+              <span>•</span>
+              <span class="capitalize">${r.frecuencia || 'mensual'}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <div class="text-right">
+            <span class="text-xs font-black text-rose-600">-${formatted}</span>
+            ${isUSD ? `<span class="block text-[9px] text-[#475569]">~ ${formatPEN(Number(r.monto) * state.tc)}</span>` : ''}
+          </div>
+          <div class="flex items-center pl-1.5 border-l border-[#C9D6E5] space-x-1">
+            ${!yaPagado ? `
+              <button onclick="window.pagarRecurrente('${r.id}')" class="px-2 py-1 rounded-lg bg-[#0B1F3B] hover:bg-[#123A63] text-white text-[10px] font-bold active:scale-95 transition-all shadow-sm" title="Registrar pago este mes">
+                Pagar
+              </button>
+            ` : ''}
+            <button onclick="window.editRecurrente('${r.id}')" class="p-1 rounded-lg text-[#2F5D8C] hover:text-[#0B1F3B] hover:bg-[#C9D6E5]/40 transition-all active:scale-95" title="Editar">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="window.deleteRecurrente('${r.id}')" class="p-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-100 transition-all active:scale-95" title="Eliminar">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (window.lucide) lucide.createIcons();
+}
 
 // Render Prestamos
 function renderPrestamos() {
@@ -464,6 +574,108 @@ function renderPrestamos() {
 
   document.getElementById('loans-total-capital').innerText = formatPEN(totalCapital);
   document.getElementById('loans-monthly-interest').innerText = `${formatPEN(totalInteres)}/mes`;
+}
+
+// Render Presupuestos Mensuales (Semáforo de Gastos)
+function renderPresupuestos() {
+  const container = document.getElementById('list-presupuestos');
+  const countEl = document.getElementById('resumen-presupuestos');
+  if (!container) return;
+
+  if (state.presupuestos.length === 0) {
+    container.innerHTML = `
+      <div class="text-center py-6 px-4 rounded-2xl bg-[#F2F5F8] border border-dashed border-[#C9D6E5] space-y-2">
+        <p class="text-xs text-[#2F5D8C]">Aún no has fijado topes de gasto por categoría este mes.</p>
+        <button onclick="document.getElementById('modal-presupuesto').classList.remove('hidden')" class="px-3.5 py-1.5 rounded-xl bg-white text-[#123A63] border border-[#C9D6E5] font-bold text-xs hover:bg-[#123A63]/10">
+          + Asignar primer presupuesto
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  // Calcular gastos del mes actual por categoría
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const gastoPorCat = {};
+  state.transacciones.forEach(t => {
+    if (t.tipo === 'gasto' && t.fecha && t.fecha.startsWith(currentMonth) && t.categoria_id) {
+      gastoPorCat[t.categoria_id] = (gastoPorCat[t.categoria_id] || 0) + Number(t.monto || 0);
+    }
+  });
+
+  let totalPresupuestado = 0;
+  let totalGastado = 0;
+
+  container.innerHTML = state.presupuestos.map(p => {
+    const cat = state.categorias.find(c => c.id === p.categoria_id) || p.categorias || { nombre: 'Categoría' };
+    const limite = Number(p.monto_limite || 1);
+    const gastado = gastoPorCat[p.categoria_id] || 0;
+    const pct = Math.min(100, Math.round((gastado / limite) * 100));
+    const restante = Math.max(0, limite - gastado);
+
+    totalPresupuestado += limite;
+    totalGastado += gastado;
+
+    let barColor = 'bg-emerald-500';
+    let textColor = 'text-emerald-600';
+    let badgeLabel = 'En meta';
+    let badgeClass = 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20';
+
+    if (pct > 90) {
+      barColor = 'bg-rose-500';
+      textColor = 'text-rose-600';
+      badgeLabel = gastado > limite ? 'Excedido' : 'Límite Crítico';
+      badgeClass = 'bg-rose-500/10 text-rose-600 border-rose-500/20';
+    } else if (pct >= 70) {
+      barColor = 'bg-amber-500';
+      textColor = 'text-amber-700';
+      badgeLabel = 'Cuidado (Al 70%+)';
+      badgeClass = 'bg-amber-500/10 text-amber-700 border-amber-500/20';
+    }
+
+    return `
+      <div class="p-3.5 rounded-2xl bg-[#F2F5F8] border border-[#C9D6E5] hover:border-[#2F5D8C] space-y-2.5">
+        <div class="flex justify-between items-start">
+          <div class="flex items-center space-x-2.5">
+            <div class="w-8 h-8 rounded-xl bg-white border border-[#C9D6E5] text-[#123A63] flex items-center justify-center font-bold text-xs shadow-sm">
+              <i data-lucide="pie-chart" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-[#0B1F3B]">${cat.nombre}</h4>
+              <p class="text-[10px] text-[#2F5D8C]">Disponible: <strong class="${textColor}">${formatPEN(restante)}</strong></p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[9px] px-2 py-0.5 rounded-full font-bold border ${badgeClass}">
+              ${badgeLabel} (${pct}%)
+            </span>
+            <button onclick="window.editPresupuesto('${p.id}')" class="p-1 rounded-lg text-[#2F5D8C] hover:text-[#0B1F3B]" title="Editar">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="window.deletePresupuesto('${p.id}')" class="p-1 rounded-lg text-rose-400 hover:text-rose-600" title="Eliminar">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <div class="w-full bg-[#C9D6E5]/40 rounded-full h-2 overflow-hidden p-0.5 border border-[#C9D6E5]">
+            <div class="${barColor} h-1 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
+          </div>
+          <div class="flex justify-between text-[10px] font-bold">
+            <span class="${textColor}">${formatPEN(gastado)} gastados</span>
+            <span class="text-[#2F5D8C]">Tope: ${formatPEN(limite)}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  if (countEl) {
+    countEl.innerText = `${formatPEN(totalGastado)} gastados de ${formatPEN(totalPresupuestado)} asignados`;
+  }
+
+  if (window.lucide) lucide.createIcons();
 }
 
 // Render Transacciones
@@ -562,6 +774,17 @@ function populateDropdowns() {
     const filteredCats = state.categorias.filter(c => c.tipo === state.tipoTx);
     selCat.innerHTML = filteredCats.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
   }
+
+  const selRecCta = document.getElementById('rec-cuenta');
+  const selRecCat = document.getElementById('rec-categoria');
+  const selPresCat = document.getElementById('pres-categoria');
+
+  if (selRecCta) selRecCta.innerHTML = '<option value="">(Sin cuenta asignada)</option>' + optionsHtml;
+
+  const gastoCats = state.categorias.filter(c => c.tipo === 'gasto');
+  const gastoCatsHtml = gastoCats.map(c => `<option value="${c.id}">${c.nombre}</option>`).join('');
+  if (selRecCat) selRecCat.innerHTML = gastoCatsHtml;
+  if (selPresCat) selPresCat.innerHTML = gastoCatsHtml;
 }
 
 function setupNavigation() {
@@ -1059,6 +1282,8 @@ function setupModals() {
       btnCopy.innerText = '¡Copiado con tu User ID!';
       setTimeout(() => btnCopy.innerHTML = '<i data-lucide="copy" class="w-4 h-4"></i> Copiar Configuración del Atajo', 2000);
     };
+  }
+
   // Handlers para Nombre de Usuario
   const modalName = document.getElementById('modal-name');
   const btnCloseName = document.getElementById('btn-close-modal-name');
@@ -1267,7 +1492,110 @@ function setupModals() {
       }
     };
   }
-}
+
+  // Handlers para Gastos Recurrentes / Suscripciones
+  const modalRec = document.getElementById('modal-recurrente');
+  const btnOpenRec = document.getElementById('btn-open-modal-recurrente');
+  const btnCloseRec = document.getElementById('btn-close-modal-recurrente');
+  const formRec = document.getElementById('form-recurrente');
+
+  if (btnOpenRec) {
+    btnOpenRec.onclick = () => {
+      document.getElementById('rec-id').value = '';
+      document.getElementById('modal-recurrente-title').innerText = 'Nueva Suscripción / Gasto Fijo';
+      document.getElementById('btn-submit-recurrente').innerText = 'Guardar Suscripción';
+      if (formRec) formRec.reset();
+      populateDropdowns();
+      modalRec.classList.remove('hidden');
+    };
+  }
+  if (btnCloseRec) btnCloseRec.onclick = () => modalRec.classList.add('hidden');
+
+  if (formRec) {
+    formRec.onsubmit = async (e) => {
+      e.preventDefault();
+      const recId = document.getElementById('rec-id').value;
+      const nombre = document.getElementById('rec-nombre').value.trim();
+      const monto = parseFloat(document.getElementById('rec-monto').value);
+      const moneda = document.getElementById('rec-moneda').value;
+      const dia = parseInt(document.getElementById('rec-dia').value);
+      const frecuencia = document.getElementById('rec-frecuencia').value;
+      const cuentaId = document.getElementById('rec-cuenta').value || null;
+      const catId = document.getElementById('rec-categoria').value || null;
+      const btn = document.getElementById('btn-submit-recurrente');
+
+      btn.disabled = true;
+
+      const recData = {
+        nombre, monto, moneda, dia_pago: dia, frecuencia,
+        cuenta_id: cuentaId, categoria_id: catId, user_id: state.user.id
+      };
+
+      try {
+        if (recId) {
+          await db.from('gastos_recurrentes').update(recData).eq('id', recId);
+        } else {
+          await db.from('gastos_recurrentes').insert([recData]);
+        }
+      } catch(err) {
+        console.warn('Recurrente fallback:', err);
+      }
+
+      btn.disabled = false;
+      modalRec.classList.add('hidden');
+      formRec.reset();
+      await loadUserData();
+    };
+  }
+
+  // Handlers para Presupuestos Mensuales
+  const modalPres = document.getElementById('modal-presupuesto');
+  const btnOpenPres = document.getElementById('btn-open-modal-presupuesto');
+  const btnClosePres = document.getElementById('btn-close-modal-presupuesto');
+  const formPres = document.getElementById('form-presupuesto');
+
+  if (btnOpenPres) {
+    btnOpenPres.onclick = () => {
+      document.getElementById('pres-id').value = '';
+      document.getElementById('modal-presupuesto-title').innerText = 'Asignar Presupuesto Mensual';
+      document.getElementById('btn-submit-presupuesto').innerText = 'Guardar Presupuesto';
+      if (formPres) formPres.reset();
+      populateDropdowns();
+      modalPres.classList.remove('hidden');
+    };
+  }
+  if (btnClosePres) btnClosePres.onclick = () => modalPres.classList.add('hidden');
+
+  if (formPres) {
+    formPres.onsubmit = async (e) => {
+      e.preventDefault();
+      const presId = document.getElementById('pres-id').value;
+      const catId = document.getElementById('pres-categoria').value;
+      const limite = parseFloat(document.getElementById('pres-limite').value);
+      const btn = document.getElementById('btn-submit-presupuesto');
+
+      btn.disabled = true;
+
+      const presData = {
+        categoria_id: catId, monto_limite: limite, user_id: state.user.id
+      };
+
+      try {
+        if (presId) {
+          await db.from('presupuestos_mensuales').update(presData).eq('id', presId);
+        } else {
+          await db.from('presupuestos_mensuales').upsert(presData, { onConflict: 'user_id,categoria_id' });
+        }
+      } catch(err) {
+        console.warn('Presupuesto fallback:', err);
+      }
+
+      btn.disabled = false;
+      modalPres.classList.add('hidden');
+      formPres.reset();
+      await loadUserData();
+    };
+  }
 }
 
 
@@ -1388,5 +1716,96 @@ window.deleteTransaccion = async (id) => {
   } else {
     await loadUserData();
   }
+};
+
+window.pagarRecurrente = async (id) => {
+  const r = state.recurrentes.find(x => x.id === id);
+  if (!r) return;
+  if (!confirm(`¿Confirmas el pago de "${r.nombre}" por ${formatPEN(r.monto, true)}?`)) return;
+
+  const hoy = new Date().toISOString().split('T')[0];
+
+  const newTx = {
+    fecha: hoy,
+    tipo: 'gasto',
+    monto: r.monto,
+    moneda: r.moneda || 'PEN',
+    cuenta_origen_id: r.cuenta_id || null,
+    categoria_id: r.categoria_id || null,
+    comercio: `Pago suscripción: ${r.nombre}`,
+    user_id: state.user.id
+  };
+
+  const { error } = await db.from('transacciones').insert([newTx]);
+
+  if (!error && r.cuenta_id) {
+    const cta = state.cuentas.find(c => c.id === r.cuenta_id);
+    if (cta) {
+      await db.from('cuentas').update({ saldo_actual: Number(cta.saldo_actual) - Number(r.monto) }).eq('id', r.cuenta_id);
+    }
+  }
+
+  try {
+    await db.from('gastos_recurrentes').update({ ultimo_pago_fecha: hoy }).eq('id', id);
+  } catch(e) {}
+
+  r.ultimo_pago_fecha = hoy;
+  localStorage.setItem('financiere_recurrentes_' + state.user.id, JSON.stringify(state.recurrentes));
+
+  await loadUserData();
+};
+
+window.editRecurrente = (id) => {
+  const r = state.recurrentes.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('rec-id').value = r.id;
+  document.getElementById('modal-recurrente-title').innerText = 'Editar Suscripción';
+  document.getElementById('btn-submit-recurrente').innerText = 'Guardar Cambios';
+  document.getElementById('rec-nombre').value = r.nombre;
+  document.getElementById('rec-monto').value = r.monto;
+  document.getElementById('rec-moneda').value = r.moneda || 'PEN';
+  document.getElementById('rec-dia').value = r.dia_pago || 1;
+  document.getElementById('rec-frecuencia').value = r.frecuencia || 'mensual';
+  populateDropdowns();
+  if (r.cuenta_id) document.getElementById('rec-cuenta').value = r.cuenta_id;
+  if (r.categoria_id) document.getElementById('rec-categoria').value = r.categoria_id;
+  document.getElementById('modal-recurrente').classList.remove('hidden');
+};
+
+window.deleteRecurrente = async (id) => {
+  const r = state.recurrentes.find(x => x.id === id);
+  if (!r) return;
+  if (!confirm(`¿Eliminar la suscripción "${r.nombre}"?`)) return;
+
+  try {
+    await db.from('gastos_recurrentes').delete().eq('id', id);
+  } catch(e) {}
+
+  state.recurrentes = state.recurrentes.filter(x => x.id !== id);
+  localStorage.setItem('financiere_recurrentes_' + state.user.id, JSON.stringify(state.recurrentes));
+  await loadUserData();
+};
+
+window.editPresupuesto = (id) => {
+  const p = state.presupuestos.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('pres-id').value = p.id;
+  document.getElementById('modal-presupuesto-title').innerText = 'Editar Presupuesto';
+  document.getElementById('btn-submit-presupuesto').innerText = 'Guardar Cambios';
+  populateDropdowns();
+  document.getElementById('pres-categoria').value = p.categoria_id;
+  document.getElementById('pres-limite').value = p.monto_limite;
+  document.getElementById('modal-presupuesto').classList.remove('hidden');
+};
+
+window.deletePresupuesto = async (id) => {
+  if (!confirm('¿Eliminar este presupuesto mensual?')) return;
+  try {
+    await db.from('presupuestos_mensuales').delete().eq('id', id);
+  } catch(e) {}
+
+  state.presupuestos = state.presupuestos.filter(x => x.id !== id);
+  localStorage.setItem('financiere_presupuestos_' + state.user.id, JSON.stringify(state.presupuestos));
+  await loadUserData();
 };
 
