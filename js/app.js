@@ -303,18 +303,23 @@ function renderCuentas() {
             <span class="text-xs font-black ${isNegative ? 'text-rose-600' : 'text-[#0B1F3B]'}">${formatted}</span>
             ${isUSD ? `<span class="block text-[10px] text-[#475569]">~ ${formatPEN(Number(c.saldo_actual) * state.tc)}</span>` : ''}
           </div>
-          <div class="flex items-center pl-1.5 border-l border-[#C9D6E5]">
-            <button onclick="window.editCuenta('${c.id}')" class="p-1 rounded-lg text-[#2F5D8C] hover:text-[#0B1F3B] hover:bg-[#C9D6E5]/40 transition-all active:scale-95" title="Editar cuenta">
-              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+          <div class="flex items-center pl-2 border-l border-[#C9D6E5] space-x-1">
+            <button onclick="window.editCuenta('${c.id}')" class="p-1.5 rounded-lg text-[#2F5D8C] hover:text-[#0B1F3B] hover:bg-[#C9D6E5]/40 transition-all active:scale-95" title="Editar cuenta">
+              <i data-lucide="edit-3" class="w-4 h-4"></i>
             </button>
-            <button onclick="window.deleteCuenta('${c.id}')" class="p-1 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-100 transition-all active:scale-95" title="Eliminar cuenta">
-              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            <button onclick="window.deleteCuenta('${c.id}')" class="p-1.5 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-100 transition-all active:scale-95" title="Eliminar cuenta">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </div>
         </div>
       </div>
     `;
   }).join('');
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+}
 }
 
 // Render Metas de Ahorro
@@ -535,6 +540,10 @@ function renderTransacciones() {
       </div>
     `;
   }).join('');
+
+  if (window.lucide) {
+    lucide.createIcons();
+  }
 }
 
 function populateDropdowns() {
